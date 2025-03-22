@@ -1,57 +1,81 @@
 {
   "spring": [
     {
-      "name": "春笋炒肉丝",
-      "ingredients": ["春笋", "猪肉", "胡萝卜", "青椒"],
-      "effect": "疏肝理气",
-      "suitable_elements": ["wood", "fire"]
+      "name": "春季养肝汤",
+      "ingredients": ["豆芽", "香菇", "胡萝卜", "豆腐", "姜片"],
+      "effect": "疏肝理气，滋养肝血",
+      "suitable_elements": ["wood", "water"]
     },
     {
-      "name": "香椿拌豆腐",
-      "ingredients": ["香椿", "豆腐", "蒜末", "香油"],
-      "effect": "清热解毒",
-      "suitable_elements": ["wood", "water"]
+      "name": "清炒时蔬",
+      "ingredients": ["芦笋", "荷兰豆", "胡萝卜", "橄榄油", "大蒜"],
+      "effect": "清肝明目，健脾和胃",
+      "suitable_elements": ["wood", "earth"]
+    },
+    {
+      "name": "三色糙米饭",
+      "ingredients": ["糙米", "红米", "黑米", "藜麦"],
+      "effect": "健脾养胃，补充膳食纤维",
+      "suitable_elements": ["earth", "metal"]
     }
   ],
   "summer": [
     {
-      "name": "莲子百合银耳汤",
-      "ingredients": ["莲子", "百合", "银耳", "冰糖"],
-      "effect": "清心安神",
-      "suitable_elements": ["fire", "earth"]
+      "name": "清爽绿豆汤",
+      "ingredients": ["绿豆", "薏米", "冰糖", "荷叶"],
+      "effect": "清热解暑，消暑利湿",
+      "suitable_elements": ["fire", "water"]
     },
     {
-      "name": "苦瓜排骨汤",
-      "ingredients": ["苦瓜", "排骨", "姜片", "枸杞"],
-      "effect": "清热解暑",
+      "name": "苦瓜炒蛋",
+      "ingredients": ["苦瓜", "鸡蛋", "姜片", "葱花"],
+      "effect": "清热解毒，滋阴降火",
       "suitable_elements": ["fire", "metal"]
+    },
+    {
+      "name": "冬瓜薏米汤",
+      "ingredients": ["冬瓜", "薏米", "红枣", "枸杞"],
+      "effect": "清热利湿，健脾消肿",
+      "suitable_elements": ["earth", "water"]
     }
   ],
   "autumn": [
     {
-      "name": "山药栗子炖鸡",
-      "ingredients": ["山药", "栗子", "鸡肉", "枸杞"],
-      "effect": "健脾益肺",
-      "suitable_elements": ["earth", "metal"]
+      "name": "秋梨银耳汤",
+      "ingredients": ["雪梨", "银耳", "冰糖", "枸杞"],
+      "effect": "滋阴润肺，生津止咳",
+      "suitable_elements": ["metal", "water"]
     },
     {
-      "name": "梨炖川贝",
-      "ingredients": ["梨", "川贝", "冰糖"],
-      "effect": "润肺止咳",
-      "suitable_elements": ["metal"]
+      "name": "山药炖鸡汤",
+      "ingredients": ["山药", "鸡肉", "枸杞", "红枣", "姜片"],
+      "effect": "补脾益肺，强健体魄",
+      "suitable_elements": ["metal", "earth"]
+    },
+    {
+      "name": "板栗红薯粥",
+      "ingredients": ["板栗", "红薯", "大米", "冰糖"],
+      "effect": "健脾补肾，养胃暖身",
+      "suitable_elements": ["earth", "water"]
     }
   ],
   "winter": [
     {
       "name": "羊肉萝卜汤",
-      "ingredients": ["羊肉", "白萝卜", "姜", "枸杞"],
-      "effect": "温阳补肾",
-      "suitable_elements": ["water", "earth"]
+      "ingredients": ["羊肉", "白萝卜", "姜片", "料酒", "八角"],
+      "effect": "温阳散寒，补肾强身",
+      "suitable_elements": ["water", "fire"]
     },
     {
-      "name": "黑豆鸡脚汤",
-      "ingredients": ["黑豆", "鸡脚", "枸杞", "姜片"],
-      "effect": "滋补肝肾",
+      "name": "黑豆核桃粥",
+      "ingredients": ["黑豆", "核桃", "红枣", "桂圆", "糯米"],
+      "effect": "补肾填精，温阳固本",
+      "suitable_elements": ["water", "wood"]
+    },
+    {
+      "name": "三黑汤",
+      "ingredients": ["黑芝麻", "黑豆", "黑米", "红枣", "姜片"],
+      "effect": "补肝肾，养血乌发",
       "suitable_elements": ["water", "wood"]
     }
   ]
