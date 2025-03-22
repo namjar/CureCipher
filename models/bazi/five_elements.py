@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 五行分析模块
 计算八字中五行的比例并分析其生克关系
@@ -48,9 +50,13 @@ def analyze_five_elements(bazi_result):
     # 大运小运的五行（权重较高）
     dayun_weight = 2.0
     xiaoyun_weight = 1.0
-    if bazi_result["dayun"]["element"]:
+    
+    # 安全处理大运小运的元素
+    if "dayun" in bazi_result and bazi_result["dayun"].get("element", ""):
         elements[bazi_result["dayun"]["element"]] += dayun_weight
-    elements[bazi_result["xiaoyun"]["element"]] += xiaoyun_weight
+    
+    if "xiaoyun" in bazi_result and bazi_result["xiaoyun"].get("element", ""):
+        elements[bazi_result["xiaoyun"]["element"]] += xiaoyun_weight
     
     # 计算总权重
     total_weight = sum(elements.values())
@@ -231,7 +237,7 @@ def analyze_relations(day_master, element_percentages):
     # 生克关系
     relations = {}
     
-    # 五行相生关系
+    # 五行相生相克关系
     for element in ["木", "火", "土", "金", "水"]:
         sheng = get_generating_element(element)
         sheng_by = get_generated_element(element)
@@ -303,13 +309,13 @@ def generate_health_advice(day_master, element_percentages, balance_analysis):
     返回:
         dict: 健康建议
     """
-    # 五行对应的身体系统
+    # 五行对应的身体系统和北美常见病
     element_body_systems = {
-        "木": ["肝", "胆", "筋络", "眼睛"],
-        "火": ["心", "小肠", "血脉", "舌"],
-        "土": ["脾", "胃", "肌肉", "口"],
-        "金": ["肺", "大肠", "皮毛", "鼻"],
-        "水": ["肾", "膀胱", "骨髓", "耳"]
+        "木": {"systems": ["肝", "胆", "筋络", "眼睛"], "diseases": ["慢性疼痛", "焦虑抑郁"]},
+        "火": {"systems": ["心", "小肠", "血脉", "舌"], "diseases": ["高血压", "糖尿病并发心血管病"]},
+        "土": {"systems": ["脾", "胃", "肌肉", "口"], "diseases": ["肥胖", "脾虚"]},
+        "金": {"systems": ["肺", "大肠", "皮毛", "鼻"], "diseases": ["慢性疼痛", "疫苗后遗症疲劳"]},
+        "水": {"systems": ["肾", "膀胱", "骨髓", "耳"], "diseases": ["肾虚", "糖尿病并发肾病"]}
     }
     
     # 过强和过弱的五行
@@ -321,17 +327,19 @@ def generate_health_advice(day_master, element_percentages, balance_analysis):
     for element in excess_elements:
         health_risks.append({
             "element": element,
-            "affected_systems": element_body_systems[element],
+            "affected_systems": element_body_systems[element]["systems"],
+            "diseases": element_body_systems[element]["diseases"],
             "risk_type": "过盛",
-            "description": f"{element}过盛，可能导致{', '.join(element_body_systems[element])}功能亢进或炎症"
+            "description": f"{element}过盛，可能导致{', '.join(element_body_systems[element]['systems'])}功能亢进或炎症，易引发{', '.join(element_body_systems[element]['diseases'])}"
         })
     
     for element in deficient_elements:
         health_risks.append({
             "element": element,
-            "affected_systems": element_body_systems[element],
+            "affected_systems": element_body_systems[element]["systems"],
+            "diseases": element_body_systems[element]["diseases"],
             "risk_type": "不足",
-            "description": f"{element}不足，可能导致{', '.join(element_body_systems[element])}功能减弱"
+            "description": f"{element}不足，可能导致{', '.join(element_body_systems[element]['systems'])}功能减弱，易引发{', '.join(element_body_systems[element]['diseases'])}"
         })
     
     # 日主相关的健康建议
@@ -482,7 +490,7 @@ def generate_diet_advice(element_percentages):
     return {
         "recommended_flavors": recommended_flavors,
         "avoid_flavors": avoid_flavors,
-        "seasonal_recipes": recommended_recipes,
+        "seasonal_recipes": recommended_recipes[:3],  # 只推荐最多3个食谱
         "general_advice": "根据五行平衡状态，调整饮食口味和成分，以达到调和阴阳、平衡五行的目的。"
     }
 
@@ -560,8 +568,118 @@ def load_json_data(filename):
         with open(data_file, 'r', encoding='utf-8') as f:
             return json.load(f)
     except Exception as e:
-        print(f"加载JSON文件出错: {e}")
-        return {}
+        print(f"加载JSON文件{filename}出错: {e}")
+        # 返回空字典作为默认值
+        if filename == "five_elements_flavors.json":
+            return create_default_flavors()
+        elif filename == "five_elements_exercises.json":
+            return create_default_exercises()
+        elif filename == "diet_recipes.json":
+            return create_default_recipes()
+        else:
+            return {}
+
+def create_default_flavors():
+    """创建默认的五行口味数据"""
+    return {
+        "wood": {
+            "flavor": "酸",
+            "effect": "收敛、固涩",
+            "nutrients": ["维生素C"],
+            "foods": ["柠檬", "醋"]
+        },
+        "fire": {
+            "flavor": "苦",
+            "effect": "清热、泻火",
+            "nutrients": ["维生素B"],
+            "foods": ["苦瓜", "茶叶"]
+        },
+        "earth": {
+            "flavor": "甘",
+            "effect": "补益、和中",
+            "nutrients": ["碳水化合物"],
+            "foods": ["大米", "土豆"]
+        },
+        "metal": {
+            "flavor": "辛",
+            "effect": "发散、行气",
+            "nutrients": ["挥发油"],
+            "foods": ["姜", "葱"]
+        },
+        "water": {
+            "flavor": "咸",
+            "effect": "软坚、润下",
+            "nutrients": ["钠"],
+            "foods": ["盐", "海带"]
+        }
+    }
+
+def create_default_exercises():
+    """创建默认的五行运动数据"""
+    return {
+        "wood": {
+            "exercise_types": ["伸展运动", "太极"],
+            "effect": "舒展筋络，疏肝理气",
+            "frequency": "每周3-4次"
+        },
+        "fire": {
+            "exercise_types": ["有氧运动", "慢跑"],
+            "effect": "促进血液循环，调节心肺功能",
+            "frequency": "每周4-5次"
+        },
+        "earth": {
+            "exercise_types": ["健走", "徒步旅行"],
+            "effect": "增强肌肉力量，促进消化吸收",
+            "frequency": "每天45-60分钟"
+        },
+        "metal": {
+            "exercise_types": ["呼吸训练", "冥想"],
+            "effect": "增强肺活量，调节呼吸系统",
+            "frequency": "每天3-4次"
+        },
+        "water": {
+            "exercise_types": ["力量训练", "举重"],
+            "effect": "增强骨密度，强健肾脏功能",
+            "frequency": "每周2-3次"
+        }
+    }
+
+def create_default_recipes():
+    """创建默认的季节食谱数据"""
+    return {
+        "spring": [
+            {
+                "name": "春季养肝汤",
+                "ingredients": ["豆芽", "香菇", "胡萝卜"],
+                "effect": "疏肝理气，滋养肝血",
+                "suitable_elements": ["wood", "water"]
+            }
+        ],
+        "summer": [
+            {
+                "name": "清爽绿豆汤",
+                "ingredients": ["绿豆", "薏米", "冰糖"],
+                "effect": "清热解暑，消暑利湿",
+                "suitable_elements": ["fire", "water"]
+            }
+        ],
+        "autumn": [
+            {
+                "name": "秋梨银耳汤",
+                "ingredients": ["雪梨", "银耳", "冰糖"],
+                "effect": "滋阴润肺，生津止咳",
+                "suitable_elements": ["metal", "water"]
+            }
+        ],
+        "winter": [
+            {
+                "name": "羊肉萝卜汤",
+                "ingredients": ["羊肉", "白萝卜", "姜片"],
+                "effect": "温阳散寒，补肾强身",
+                "suitable_elements": ["water", "fire"]
+            }
+        ]
+    }
 
 def get_generating_element(element):
     """
@@ -639,65 +757,62 @@ def get_controlled_element(element):
     }
     return controlled_map.get(element, "")
 
-def get_element_english(chinese_element):
+def get_element_english(element):
     """
-    将中文五行属性转换为英文
+    将五行名称转换为英文
     
     参数:
-        chinese_element (str): 中文五行属性
+        element (str): 五行名称（中文）
     
     返回:
-        str: 英文五行属性 ('wood', 'fire', 'earth', 'metal', 'water')
+        str: 五行英文名称
     """
-    element_map = {
+    element_english_map = {
         "木": "wood",
         "火": "fire",
         "土": "earth",
         "金": "metal",
         "水": "water"
     }
-    
-    return element_map.get(chinese_element, "unknown")
+    return element_english_map.get(element, "")
 
 if __name__ == "__main__":
     # 测试代码
     test_bazi_result = {
         "bazi": {
-            "year": "庚午",
-            "month": "丙申",
-            "day": "甲子",
-            "hour": "壬寅",
-            "day_master": "甲",
             "day_master_element": "木"
         },
         "elements": {
-            "year": "金",
+            "year": "木",
             "month": "火",
             "day": "木",
             "hour": "水"
         },
         "nayin": {
-            "year": "路旁土",
-            "month": "山下火",
-            "day": "海中金",
-            "hour": "涧下水"
+            "year": "山下火",
+            "month": "大林木",
+            "day": "大林木",
+            "hour": "海中金"
         },
         "current": {
-            "liunian": "乙巳",
-            "liunian_element": "木",
-            "liuyue": "壬寅",
-            "liuyue_element": "水"
+            "liunian_element": "金",
+            "liuyue_element": "土"
         },
         "dayun": {
-            "ganzhi": "丙戌",
-            "element": "火",
-            "start_age": 28,
-            "end_age": 38
+            "element": "火"
         },
         "xiaoyun": {
-            "ganzhi": "丁亥",
-            "element": "火"
+            "element": "水"
         }
     }
+    
     result = analyze_five_elements(test_bazi_result)
-    print(result)
+    print("五行分析结果：")
+    print(f"五行计数: {result['element_counts']}")
+    print(f"五行百分比: {result['element_percentages']}")
+    print(f"平衡分析: {result['balance_analysis']}")
+    print(f"日主分析: {result['day_master_analysis']}")
+    print(f"生克关系: {result['relations_analysis']}")
+    print(f"健康建议: {result['health_advice']}")
+    print(f"饮食建议: {result['diet_advice']}")
+    print(f"运动建议: {result['exercise_advice']}")
