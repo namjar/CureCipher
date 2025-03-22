@@ -22,6 +22,11 @@ def ensure_root_directory():
     if os.getcwd() != root_dir:
         os.chdir(root_dir)
         print(f"已切换到项目根目录: {root_dir}")
+    
+    # 将项目根目录添加到Python路径
+    if root_dir not in sys.path:
+        sys.path.insert(0, root_dir)
+        print(f"已将项目根目录添加到Python路径: {root_dir}")
 
 if __name__ == "__main__":
     # 确保在项目根目录运行
