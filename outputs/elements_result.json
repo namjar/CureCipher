@@ -1,0 +1,277 @@
+{
+  "element_counts": {
+    "木": 2.0,
+    "火": 1.0,
+    "土": 2.0,
+    "金": 0.5,
+    "水": 3.5
+  },
+  "element_percentages": {
+    "木": 22.22222222222222,
+    "火": 11.11111111111111,
+    "土": 22.22222222222222,
+    "金": 5.555555555555555,
+    "水": 38.88888888888889
+  },
+  "balance_analysis": {
+    "balance_state": "稍有不平衡",
+    "description": "水偏强，金偏弱，可能需要适当调整。",
+    "std_deviation": 11.439589045541114,
+    "strongest": "水",
+    "strongest_percentage": 38.88888888888889,
+    "weakest": "金",
+    "weakest_percentage": 5.555555555555555
+  },
+  "day_master_analysis": {
+    "day_master": "水",
+    "strength": 38.88888888888889,
+    "strength_state": "过旺",
+    "advice": "需要抑制水，可以增强火以泄过旺之气。",
+    "relationships": {
+      "sheng_wo": "金",
+      "ke_wo": "土",
+      "wo_sheng": "木",
+      "wo_ke": "火"
+    }
+  },
+  "relations_analysis": {
+    "detailed_relations": {
+      "木": {
+        "percentage": 22.22222222222222,
+        "sheng_by": {
+          "element": "水",
+          "strength": 38.88888888888889
+        },
+        "sheng": {
+          "element": "火",
+          "strength": 11.11111111111111
+        },
+        "ke_by": {
+          "element": "土",
+          "strength": 22.22222222222222
+        },
+        "ke": {
+          "element": "金",
+          "strength": 5.555555555555555
+        }
+      },
+      "火": {
+        "percentage": 11.11111111111111,
+        "sheng_by": {
+          "element": "木",
+          "strength": 22.22222222222222
+        },
+        "sheng": {
+          "element": "土",
+          "strength": 22.22222222222222
+        },
+        "ke_by": {
+          "element": "金",
+          "strength": 5.555555555555555
+        },
+        "ke": {
+          "element": "水",
+          "strength": 38.88888888888889
+        }
+      },
+      "土": {
+        "percentage": 22.22222222222222,
+        "sheng_by": {
+          "element": "火",
+          "strength": 11.11111111111111
+        },
+        "sheng": {
+          "element": "金",
+          "strength": 5.555555555555555
+        },
+        "ke_by": {
+          "element": "水",
+          "strength": 38.88888888888889
+        },
+        "ke": {
+          "element": "木",
+          "strength": 22.22222222222222
+        }
+      },
+      "金": {
+        "percentage": 5.555555555555555,
+        "sheng_by": {
+          "element": "土",
+          "strength": 22.22222222222222
+        },
+        "sheng": {
+          "element": "水",
+          "strength": 38.88888888888889
+        },
+        "ke_by": {
+          "element": "木",
+          "strength": 22.22222222222222
+        },
+        "ke": {
+          "element": "火",
+          "strength": 11.11111111111111
+        }
+      },
+      "水": {
+        "percentage": 38.88888888888889,
+        "sheng_by": {
+          "element": "金",
+          "strength": 5.555555555555555
+        },
+        "sheng": {
+          "element": "木",
+          "strength": 22.22222222222222
+        },
+        "ke_by": {
+          "element": "火",
+          "strength": 11.11111111111111
+        },
+        "ke": {
+          "element": "土",
+          "strength": 22.22222222222222
+        }
+      }
+    },
+    "key_relations": [
+      {
+        "type": "土被克过重",
+        "description": "水过强，过度克制土，破坏五行平衡。",
+        "health_impact": "可能导致与土相关的身体系统功能紊乱。"
+      }
+    ]
+  },
+  "health_advice": {
+    "general_advice": "注意肾脏和泌尿系统健康，保持充足的睡眠，避免过度劳累，补充足够水分。",
+    "seasonal_advice": "春季肾水应养护，避免过度消耗，保持充足休息。",
+    "health_risks": [
+      {
+        "element": "水",
+        "affected_systems": [
+          "肾",
+          "膀胱",
+          "骨髓",
+          "耳"
+        ],
+        "diseases": [
+          "肾虚",
+          "糖尿病并发肾病"
+        ],
+        "risk_type": "过盛",
+        "description": "水过盛，可能导致肾, 膀胱, 骨髓, 耳功能亢进或炎症，易引发肾虚, 糖尿病并发肾病"
+      },
+      {
+        "element": "金",
+        "affected_systems": [
+          "肺",
+          "大肠",
+          "皮毛",
+          "鼻"
+        ],
+        "diseases": [
+          "慢性疼痛",
+          "疫苗后遗症疲劳"
+        ],
+        "risk_type": "不足",
+        "description": "金不足，可能导致肺, 大肠, 皮毛, 鼻功能减弱，易引发慢性疼痛, 疫苗后遗症疲劳"
+      }
+    ],
+    "balance_recommendation": "水偏强，金偏弱，可能需要适当调整。",
+    "specific_recommendations": [
+      "增强金的相关功能",
+      "适当控制水的过度表现"
+    ]
+  },
+  "diet_advice": {
+    "recommended_flavors": [
+      {
+        "element": "金",
+        "flavor": "辛",
+        "effect": "发散、行气",
+        "nutrients": [
+          "挥发油",
+          "辛辣素",
+          "维生素E"
+        ],
+        "reason": "增强金五行"
+      },
+      {
+        "element": "火",
+        "flavor": "苦",
+        "effect": "清热、泻火",
+        "nutrients": [
+          "维生素B",
+          "抗氧化物质",
+          "多酚类"
+        ],
+        "reason": "增强火五行"
+      }
+    ],
+    "avoid_flavors": [
+      {
+        "element": "土",
+        "flavor": "甘",
+        "reason": "降低过盛的土五行"
+      },
+      {
+        "element": "水",
+        "flavor": "咸",
+        "reason": "降低过盛的水五行"
+      }
+    ],
+    "seasonal_recipes": [
+      {
+        "name": "三色糙米饭",
+        "ingredients": [
+          "糙米",
+          "红米",
+          "黑米",
+          "藜麦"
+        ],
+        "effect": "健脾养胃，补充膳食纤维"
+      }
+    ],
+    "general_advice": "根据五行平衡状态，调整饮食口味和成分，以达到调和阴阳、平衡五行的目的。"
+  },
+  "exercise_advice": {
+    "recommended_exercises": [
+      {
+        "element": "金",
+        "exercise_types": [
+          "呼吸训练",
+          "胸部扩展运动",
+          "冥想",
+          "散步",
+          "深呼吸"
+        ],
+        "effect": "增强肺活量，调节呼吸系统，有利于肺和大肠系统健康",
+        "reason": "增强金五行"
+      },
+      {
+        "element": "火",
+        "exercise_types": [
+          "有氧运动",
+          "慢跑",
+          "游泳",
+          "骑行",
+          "舞蹈"
+        ],
+        "effect": "促进血液循环，调节心肺功能，有利于心血管系统健康",
+        "reason": "增强火五行"
+      },
+      {
+        "element": "木",
+        "exercise_types": [
+          "伸展运动",
+          "太极",
+          "气功",
+          "瑜伽",
+          "舒展体操"
+        ],
+        "effect": "舒展筋络，疏肝理气，有利于肝胆系统健康",
+        "reason": "保持木五行平衡"
+      }
+    ],
+    "general_advice": "根据五行平衡状态，选择适合的运动方式，以调节气血、平衡五行、增强体质。",
+    "frequency_advice": "每周至少进行3-5次适度运动，每次30-60分钟，以达到最佳效果。"
+  }
+}
