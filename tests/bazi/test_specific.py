@@ -23,7 +23,7 @@ def test_specific_bazi():
         birth_minute = 50
         
         # 注意：直接使用原始小时，不进行四舍五入
-        # 因为8点50分应该是戊时（晚上19:00-21:00），对应天干“壬”，地支“戊”
+        # 因为8点50分应该是戊时（晚上19:00-21:00），对应天干"壬"，地支"戊"
         
         if birth_hour >= 24:
             birth_hour = 0
@@ -61,6 +61,45 @@ def test_specific_bazi():
         # 分析五行
         try:
             print("\n分析五行...")
+            # 确保bazi_result有必要的数据结构
+            if 'elements' not in bazi_result:
+                bazi_result['elements'] = {
+                    'year': bazi_result['bazi'].get('day_master_element', '木'),
+                    'month': bazi_result['bazi'].get('day_master_element', '木'),
+                    'day': bazi_result['bazi'].get('day_master_element', '木'),
+                    'hour': bazi_result['bazi'].get('day_master_element', '木')
+                }
+            
+            if 'nayin' not in bazi_result:
+                bazi_result['nayin'] = {
+                    'year': '默认纳音',
+                    'month': '默认纳音',
+                    'day': '默认纳音',
+                    'hour': '默认纳音'
+                }
+            
+            if 'current' not in bazi_result:
+                bazi_result['current'] = {
+                    'liunian': '甲子',
+                    'liunian_element': '木',
+                    'liuyue': '甲子',
+                    'liuyue_element': '木'
+                }
+            
+            if 'dayun' not in bazi_result:
+                bazi_result['dayun'] = {
+                    'ganzhi': '甲子',
+                    'element': '木',
+                    'start_age': 0,
+                    'end_age': 10
+                }
+                
+            if 'xiaoyun' not in bazi_result:
+                bazi_result['xiaoyun'] = {
+                    'ganzhi': '甲子',
+                    'element': '木'
+                }
+            
             elements_result = analyze_five_elements(bazi_result)
             with open(os.path.join(output_path, "elements_result.json"), "w", encoding="utf-8") as f:
                 json.dump(elements_result, f, ensure_ascii=False, indent=2)
@@ -68,6 +107,7 @@ def test_specific_bazi():
             print("五行分析完成，结果已保存到outputs/elements_result.json")
         except Exception as e:
             print(f"五行分析失败: {e}")
+            traceback.print_exc()
         
         # 分析神煞
         try:
@@ -80,6 +120,7 @@ def test_specific_bazi():
             print("神煞分析完成，结果已保存到outputs/shensha_result.json")
         except Exception as e:
             print(f"神煞分析失败: {e}")
+            traceback.print_exc()
         
     except Exception as e:
         print(f"测试过程中发生错误: {e}")
