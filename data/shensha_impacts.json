@@ -1,45 +1,330 @@
 {
   "positive": {
-    "天乙": {
-      "description": "天乙贵人",
-      "impact": "吉神，主贵人相助，逢凶化吉",
-      "health_aspects": ["提高免疫力", "精神愉悦", "心态平和"],
-      "element_affinity": ["earth", "metal"]
+    "天乙贵人": {
+      "description": "天乙贵人为命理最吉之神，象征贵人相助，能逢凶化吉。",
+      "impact": "增强运势，逢凶化吉",
+      "element": "earth",
+      "health_aspects": {
+        "day_master_strong": ["脾胃健康", "焦虑抑郁缓解"],
+        "day_master_weak": ["消化不良改善"],
+        "day_master_neutral": ["免疫力提升"]
+      },
+      "element_affinity": ["wood", "earth"],
+      "flow_year_boost": ["earth", "fire"],
+      "flow_year_suppress": ["metal"]
     },
-    "文昌": {
-      "description": "文昌星",
-      "impact": "吉神，主学业进步，智慧增长",
-      "health_aspects": ["脑力增强", "精神集中", "学习能力提高"],
-      "element_affinity": ["water", "wood"]
+    "文昌贵人": {
+      "description": "文昌主智慧与学业，提升思维能力，助人头脑清晰。",
+      "impact": "提升智慧和精神状态",
+      "element": "wood",
+      "health_aspects": {
+        "day_master_strong": ["肝火旺缓解", "焦虑抑郁改善"],
+        "day_master_weak": ["精神疲劳缓解"],
+        "day_master_neutral": ["专注力增强"]
+      },
+      "element_affinity": ["wood", "fire"],
+      "flow_year_boost": ["wood"],
+      "flow_year_suppress": ["metal"]
+    },
+    "太极贵人": {
+      "description": "太极贵人助人逢难呈祥，平衡身心，化解压力。",
+      "impact": "平衡运势，化解压力",
+      "element": "water",
+      "health_aspects": {
+        "day_master_strong": ["肾虚改善", "高血压稳定"],
+        "day_master_weak": ["疲劳缓解"],
+        "day_master_neutral": ["肾气增强"]
+      },
+      "element_affinity": ["water", "metal"],
+      "flow_year_boost": ["water"],
+      "flow_year_suppress": ["earth"]
+    },
+    "月德贵人": {
+      "description": "月德贵人主慈悲与福德，能减轻灾厄，带来平安。",
+      "impact": "减轻灾厄，带来福气",
+      "element": "fire",
+      "health_aspects": {
+        "day_master_strong": ["心脏健康", "焦虑抑郁缓解"],
+        "day_master_weak": ["血压稳定"],
+        "day_master_neutral": ["精神愉悦"]
+      },
+      "element_affinity": ["fire", "wood"],
+      "flow_year_boost": ["fire"],
+      "flow_year_suppress": ["water"]
+    },
+    "天德贵人": {
+      "description": "天德贵人主仁厚，能化险为夷，提升整体运势。",
+      "impact": "化险为夷，提升运势",
+      "element": "earth",
+      "health_aspects": {
+        "day_master_strong": ["脾胃调和"],
+        "day_master_weak": ["消化功能增强"],
+        "day_master_neutral": ["体质改善"]
+      },
+      "element_affinity": ["earth", "fire"],
+      "flow_year_boost": ["earth"],
+      "flow_year_suppress": ["wood"]
+    },
+    "福星贵人": {
+      "description": "福星贵人主福禄，带来好运和健康。",
+      "impact": "福禄双全，健康长寿",
+      "element": "water",
+      "health_aspects": {
+        "day_master_strong": ["肾功能增强"],
+        "day_master_weak": ["疫苗后遗症缓解"],
+        "day_master_neutral": ["免疫力提高"]
+      },
+      "element_affinity": ["water", "metal"],
+      "flow_year_boost": ["water"],
+      "flow_year_suppress": ["earth"]
+    },
+    "国印贵人": {
+      "description": "国印贵人主权威与稳定，提升个人威望。",
+      "impact": "增强权威，稳定运势",
+      "element": "metal",
+      "health_aspects": {
+        "day_master_strong": ["肺功能增强"],
+        "day_master_weak": ["慢性疼痛缓解"],
+        "day_master_neutral": ["呼吸顺畅"]
+      },
+      "element_affinity": ["metal", "earth"],
+      "flow_year_boost": ["metal"],
+      "flow_year_suppress": ["fire"]
     },
     "禄神": {
-      "description": "禄神",
-      "impact": "吉神，主财运和事业有成",
-      "health_aspects": ["活力充沛", "代谢良好", "精力旺盛"],
-      "element_affinity": ["fire", "earth"]
+      "description": "禄神主富贵与福气，助人事业与健康。",
+      "impact": "富贵吉祥，身体安康",
+      "element": "wood",
+      "health_aspects": {
+        "day_master_strong": ["肝胆健康"],
+        "day_master_weak": ["疲劳改善"],
+        "day_master_neutral": ["精力充沛"]
+      },
+      "element_affinity": ["wood", "water"],
+      "flow_year_boost": ["wood"],
+      "flow_year_suppress": ["metal"]
+    },
+    "金舆": {
+      "description": "金舆主平稳与福禄，象征安逸生活。",
+      "impact": "平稳安逸，福禄双至",
+      "element": "metal",
+      "health_aspects": {
+        "day_master_strong": ["肺气充足"],
+        "day_master_weak": ["慢性疼痛减轻"],
+        "day_master_neutral": ["体质平稳"]
+      },
+      "element_affinity": ["metal", "earth"],
+      "flow_year_boost": ["metal"],
+      "flow_year_suppress": ["fire"]
+    },
+    "华盖": {
+      "description": "华盖主才华与孤高，助人精神提升。",
+      "impact": "才华横溢，精神升华",
+      "element": "earth",
+      "health_aspects": {
+        "day_master_strong": ["脾胃稳定"],
+        "day_master_weak": ["消化改善"],
+        "day_master_neutral": ["内心平静"]
+      },
+      "element_affinity": ["earth", "metal"],
+      "flow_year_boost": ["earth"],
+      "flow_year_suppress": ["wood"]
+    },
+    "三奇贵人": {
+      "description": "三奇贵人主奇才与机遇，助人突破困境。",
+      "impact": "奇才机遇，突破瓶颈",
+      "element": "fire",
+      "health_aspects": {
+        "day_master_strong": ["心脏健康"],
+        "day_master_weak": ["血压平稳"],
+        "day_master_neutral": ["活力提升"]
+      },
+      "element_affinity": ["fire", "wood"],
+      "flow_year_boost": ["fire"],
+      "flow_year_suppress": ["water"]
+    },
+    "天医": {
+      "description": "天医主健康与治愈，能改善身体状况。",
+      "impact": "健康长寿，治愈疾病",
+      "element": "water",
+      "health_aspects": {
+        "day_master_strong": ["肾气充足", "糖尿病改善"],
+        "day_master_weak": ["肾虚缓解"],
+        "day_master_neutral": ["体质增强"]
+      },
+      "element_affinity": ["water", "metal"],
+      "flow_year_boost": ["water"],
+      "flow_year_suppress": ["earth"]
     }
   },
   "negative": {
+    "白虎": {
+      "description": "白虎主凶，象征冲突与伤害，易引发疾病或意外。",
+      "impact": "带来冲突与健康隐患",
+      "element": "metal",
+      "health_aspects": {
+        "day_master_strong": ["慢性疼痛加重"],
+        "day_master_weak": ["肺病风险", "疫苗后遗症疲劳"],
+        "day_master_neutral": ["呼吸不适"]
+      },
+      "element_affinity": ["metal", "wood"],
+      "flow_year_boost": ["metal"],
+      "flow_year_suppress": ["fire"],
+      "remedy": ["按摩合谷穴缓解疼痛", "饮山楂茶改善代谢"]
+    },
+    "羊刃": {
+      "description": "羊刃为强硬之煞，易引发冲动与身体损伤。",
+      "impact": "增加冲动与健康损伤",
+      "element": "fire",
+      "health_aspects": {
+        "day_master_strong": ["糖尿病并发心血管病", "肝火旺"],
+        "day_master_weak": ["高血压波动"],
+        "day_master_neutral": ["轻微炎症"]
+      },
+      "element_affinity": ["fire", "wood"],
+      "flow_year_boost": ["fire"],
+      "flow_year_suppress": ["water"],
+      "remedy": ["饮菊花茶清热", "按太冲穴降火"]
+    },
     "劫煞": {
-      "description": "劫煞",
-      "impact": "凶神，主遭遇意外或损失",
-      "health_aspects": ["容易受伤", "免疫力下降", "情绪波动"],
-      "element_affinity": ["metal", "water"],
-      "remedy": ["佩戴平安符", "多吃滋阴食物"]
+      "description": "劫煞主劫难与阻碍，易导致意外和健康衰退。",
+      "impact": "引发意外与健康衰退",
+      "element": "water",
+      "health_aspects": {
+        "day_master_strong": ["肾病风险", "糖尿病并发肾衰"],
+        "day_master_weak": ["疫苗后遗症疲劳"],
+        "day_master_neutral": ["水肿"]
+      },
+      "element_affinity": ["water", "earth"],
+      "flow_year_boost": ["water"],
+      "flow_year_suppress": ["earth"],
+      "remedy": ["按太溪穴补肾", "吃黑豆增强免疫"]
     },
-    "天哭": {
-      "description": "天哭星",
-      "impact": "凶神，主悲伤忧郁",
-      "health_aspects": ["情绪低落", "睡眠质量差", "消化不良"],
-      "element_affinity": ["wood", "fire"],
-      "remedy": ["保持心情舒畅", "适当运动", "调整饮食"]
+    "亡神": {
+      "description": "亡神主灾厄与混乱，易引发突发状况。",
+      "impact": "带来灾厄与不稳定",
+      "element": "metal",
+      "health_aspects": {
+        "day_master_strong": ["慢性疼痛加重"],
+        "day_master_weak": ["肺功能下降"],
+        "day_master_neutral": ["轻微咳嗽"]
+      },
+      "element_affinity": ["metal", "earth"],
+      "flow_year_boost": ["metal"],
+      "flow_year_suppress": ["fire"],
+      "remedy": ["深呼吸调肺", "喝罗汉果茶润肺"]
     },
-    "病符": {
-      "description": "病符",
-      "impact": "凶神，主疾病和健康问题",
-      "health_aspects": ["抵抗力弱", "容易患病", "恢复慢"],
-      "element_affinity": ["earth", "water"],
-      "remedy": ["规律作息", "均衡饮食", "定期检查"]
+    "阴煞": {
+      "description": "阴煞主阴暗与精神压力，易导致情绪低落。",
+      "impact": "增加精神负担",
+      "element": "water",
+      "health_aspects": {
+        "day_master_strong": ["焦虑抑郁加重"],
+        "day_master_weak": ["肾虚疲劳"],
+        "day_master_neutral": ["睡眠质量下降"]
+      },
+      "element_affinity": ["water", "wood"],
+      "flow_year_boost": ["water"],
+      "flow_year_suppress": ["earth"],
+      "remedy": ["按内关穴安神", "饮枸杞茶补肾"]
+    },
+    "元辰": {
+      "description": "元辰主破败与不顺，易引发健康和运势低谷。",
+      "impact": "破败与运势低落",
+      "element": "earth",
+      "health_aspects": {
+        "day_master_strong": ["脾虚加重"],
+        "day_master_weak": ["肥胖风险"],
+        "day_master_neutral": ["消化不良"]
+      },
+      "element_affinity": ["earth", "fire"],
+      "flow_year_boost": ["earth"],
+      "flow_year_suppress": ["wood"],
+      "remedy": ["按足三里健脾", "吃薏米粥化湿"]
+    },
+    "咸池": {
+      "description": "咸池主桃花与情感纷扰，易导致精神疲惫。",
+      "impact": "情感混乱，精神疲劳",
+      "element": "fire",
+      "health_aspects": {
+        "day_master_strong": ["焦虑抑郁加重"],
+        "day_master_weak": ["心脏负担"],
+        "day_master_neutral": ["情绪波动"]
+      },
+      "element_affinity": ["fire", "wood"],
+      "flow_year_boost": ["fire"],
+      "flow_year_suppress": ["water"],
+      "remedy": ["冥想静心", "喝玫瑰茶舒缓"]
+    },
+    "飞刃": {
+      "description": "飞刃主伤害与冲突，易引发身体损伤。",
+      "impact": "增加伤害风险",
+      "element": "metal",
+      "health_aspects": {
+        "day_master_strong": ["慢性疼痛加重"],
+        "day_master_weak": ["肺病风险"],
+        "day_master_neutral": ["关节不适"]
+      },
+      "element_affinity": ["metal", "wood"],
+      "flow_year_boost": ["metal"],
+      "flow_year_suppress": ["fire"],
+      "remedy": ["按曲池穴缓解", "饮姜茶暖身"]
+    },
+    "灾煞": {
+      "description": "灾煞主灾难与疾病，易导致健康危机。",
+      "impact": "引发健康危机",
+      "element": "water",
+      "health_aspects": {
+        "day_master_strong": ["糖尿病并发肾病"],
+        "day_master_weak": ["肾虚严重"],
+        "day_master_neutral": ["疲劳加重"]
+      },
+      "element_affinity": ["water", "earth"],
+      "flow_year_boost": ["water"],
+      "flow_year_suppress": ["earth"],
+      "remedy": ["按涌泉穴补肾", "喝杜仲茶强腰"]
+    },
+    "吊客": {
+      "description": "吊客主丧病与低迷，易导致健康衰弱。",
+      "impact": "健康衰弱，情绪低落",
+      "element": "earth",
+      "health_aspects": {
+        "day_master_strong": ["脾胃虚弱"],
+        "day_master_weak": ["肥胖加重"],
+        "day_master_neutral": ["消化减弱"]
+      },
+      "element_affinity": ["earth", "metal"],
+      "flow_year_boost": ["earth"],
+      "flow_year_suppress": ["wood"],
+      "remedy": ["按中脘穴调胃", "吃山药健脾"]
+    },
+    "大耗": {
+      "description": "大耗主耗散与损失，易导致精力衰竭。",
+      "impact": "精力耗损，运势下降",
+      "element": "fire",
+      "health_aspects": {
+        "day_master_strong": ["高血压加重"],
+        "day_master_weak": ["糖尿病并发视网膜病变"],
+        "day_master_neutral": ["心悸"]
+      },
+      "element_affinity": ["fire", "earth"],
+      "flow_year_boost": ["fire"],
+      "flow_year_suppress": ["water"],
+      "remedy": ["按内关穴稳心", "喝绿茶降压"]
+    },
+    "丧门": {
+      "description": "丧门主丧事与疾病，易引发健康危机。",
+      "impact": "健康危机，运势低迷",
+      "element": "wood",
+      "health_aspects": {
+        "day_master_strong": ["肝火旺加重"],
+        "day_master_weak": ["慢性疼痛加剧"],
+        "day_master_neutral": ["头痛"]
+      },
+      "element_affinity": ["wood", "water"],
+      "flow_year_boost": ["wood"],
+      "flow_year_suppress": ["metal"],
+      "remedy": ["按太冲穴清肝", "喝菊花茶降火"]
     }
   }
 }
