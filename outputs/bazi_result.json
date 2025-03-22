@@ -1,0 +1,44 @@
+{
+  "bazi": {
+    "year": "丁巳",
+    "month": "壬寅",
+    "day": "癸丑",
+    "hour": "壬戌",
+    "day_master": "癸",
+    "day_master_element": "水"
+  },
+  "elements": {
+    "year": "火",
+    "month": "水",
+    "day": "水",
+    "hour": "水"
+  },
+  "nayin": {
+    "year": "沙中土",
+    "month": "金箔金",
+    "day": "桑柘木",
+    "hour": "大海水"
+  },
+  "current": {
+    "liunian": "乙巳",
+    "liunian_element": "木",
+    "liuyue": "己卯",
+    "liuyue_element": "土"
+  },
+  "dayun": {
+    "ganzhi": "",
+    "element": "",
+    "start_age": 0,
+    "end_age": 0
+  },
+  "xiaoyun": {
+    "ganzhi": "",
+    "element": ""
+  },
+  "shensha": [],
+  "location": {
+    "city": "Beijing",
+    "latitude": 40.190632,
+    "longitude": 116.412144
+  }
+}

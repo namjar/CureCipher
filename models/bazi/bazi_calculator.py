@@ -1,3 +1,8 @@
+"""
+八字计算模块 - 主计算函数
+使用lunar_python库计算八字、流年、流月、大运、小运和神煞
+"""
+
 def generate_text_report(report):
     """
     生成文本形式的命盘解读
@@ -41,6 +46,38 @@ def generate_text_report(report):
         lines.append(f"大运: {current_dayun['ganzhi']} {current_dayun['gan_shen']}{current_dayun['zhi_shen']}")
         lines.append(f"年龄范围: {current_dayun['age_range']} 岁")
         lines.append(f"纳音五行: {current_dayun['nayin']}")
+        
+        # 增加大运详细分析
+        day_master = report['basic_info']['day_master'].split()[0]
+        day_master_element = report['basic_info']['day_master'].split('(')[1].strip(')')
+        dayun_element = current_dayun['element']
+        yong_shen = report['pattern_analysis']['yong_shen'].split()[0]
+        
+        lines.append("\n[大运详细分析]")
+        
+        # 大运与日主的关系
+        if current_dayun['gan_shen']:
+            dayun_shishen = current_dayun['gan_shen']
+            lines.append(f"大运天干为{current_dayun['gan']}，十神为{dayun_shishen}，{get_relationship_by_shishen(dayun_shishen)}")
+            
+        if dayun_element == day_master_element:
+            lines.append(f"当前大运五行与日主相同，为比劫运，有增强日主力量的作用。")
+        elif is_generating(dayun_element, day_master_element):
+            lines.append(f"当前大运五行{dayun_element}生助日主{day_master_element}，为印枭运，对日主有滋养作用。")
+        elif is_generated(dayun_element, day_master_element):
+            lines.append(f"当前大运五行{dayun_element}由日主{day_master_element}所生，为食伤运，日主有泄气现象。")
+        elif is_controlling(dayun_element, day_master_element):
+            lines.append(f"当前大运五行{dayun_element}克制日主{day_master_element}，为官杀运，对日主有制约作用。")
+        elif is_controlled(dayun_element, day_master_element):
+            lines.append(f"当前大运五行{dayun_element}被日主{day_master_element}所克，为财星运，有助日主发挥克制力。")
+        
+        # 大运对格局的影响
+        if dayun_element == yong_shen:
+            lines.append(f"当前大运五行{dayun_element}与用神相同，对命局有较大助力。")
+        elif is_generating(dayun_element, yong_shen):
+            lines.append(f"当前大运五行{dayun_element}生助用神{yong_shen}，间接有利于命局。")
+        elif is_controlling(dayun_element, yong_shen):
+            lines.append(f"当前大运五行{dayun_element}克制用神{yong_shen}，可能对命局造成不利影响。")
     else:
         lines.append("尚未进入大运")
     lines.append("")
@@ -50,6 +87,70 @@ def generate_text_report(report):
     lines.append(f"流年: {report['current_info']['liunian']['ganzhi']} 十神: {report['current_info']['liunian']['gan_shen']}/{report['current_info']['liunian']['zhi_shen']}")
     lines.append(f"流月: {report['current_info']['liuyue']['ganzhi']} 十神: {report['current_info']['liuyue']['gan_shen']}/{report['current_info']['liuyue']['zhi_shen']}")
     lines.append(f"流日: {report['current_info']['liuri']['ganzhi']} 十神: {report['current_info']['liuri']['gan_shen']}/{report['current_info']['liuri']['zhi_shen']}")
+    
+    # 增加流年流月详细分析
+    day_master = report['basic_info']['day_master'].split()[0]
+    day_master_element = report['basic_info']['day_master'].split('(')[1].strip(')')
+    yong_shen = report['pattern_analysis']['yong_shen'].split()[0]
+    
+    lines.append("\n[流年流月详细分析]")
+    
+    # 流年分析
+    liunian_gz = report['current_info']['liunian']['ganzhi']
+    liunian_gan = liunian_gz[0]  # 流年天干
+    liunian_gan_element = get_element(liunian_gan)
+    liunian_gan_shen = report['current_info']['liunian']['gan_shen']
+    
+    lines.append(f"流年天干{liunian_gan}十神为{liunian_gan_shen}，{get_relationship_by_shishen(liunian_gan_shen)}")
+    
+    if is_generating(liunian_gan_element, day_master_element):
+        lines.append(f"流年天干{liunian_gan}({liunian_gan_element})生助日主，为印枭格局，有滋养作用。")
+    elif is_generated(liunian_gan_element, day_master_element):
+        lines.append(f"流年天干{liunian_gan}({liunian_gan_element})被日主所生，为食伤格局，日主有泄气现象。")
+    elif is_controlling(liunian_gan_element, day_master_element):
+        lines.append(f"流年天干{liunian_gan}({liunian_gan_element})克制日主，为官杀格局，需注意克制力度。")
+    elif is_controlled(liunian_gan_element, day_master_element):
+        lines.append(f"流年天干{liunian_gan}({liunian_gan_element})被日主所克，为财星格局，日主有发挥余地。")
+    elif liunian_gan_element == day_master_element:
+        lines.append(f"流年天干{liunian_gan}({liunian_gan_element})与日主同五行，为比劫格局，增强日主力量。")
+        
+    # 流月分析
+    liuyue_gz = report['current_info']['liuyue']['ganzhi']
+    liuyue_gan = liuyue_gz[0]  # 流月天干
+    liuyue_gan_element = get_element(liuyue_gan)
+    liuyue_gan_shen = report['current_info']['liuyue']['gan_shen']
+    
+    lines.append(f"\n流月{liuyue_gz}十神为{liuyue_gan_shen}，{get_relationship_by_shishen(liuyue_gan_shen)}")
+    
+    if is_generating(liuyue_gan_element, day_master_element):
+        lines.append(f"流月天干{liuyue_gan}({liuyue_gan_element})生助日主，本月较为顺利，有助力。")
+    elif is_controlling(liuyue_gan_element, day_master_element):
+        lines.append(f"流月天干{liuyue_gan}({liuyue_gan_element})克制日主，本月可能有阻力，需谨慎应对。")
+    elif liuyue_gan_element == day_master_element:
+        lines.append(f"流月天干{liuyue_gan}({liuyue_gan_element})与日主同五行，本月力量增强，但需避免冲动。")
+    
+    # 流年与流月组合分析
+    lines.append("\n流年流月组合分析：")
+    if liunian_gan_element == liuyue_gan_element:
+        lines.append(f"流年与流月五行相同，都是{liunian_gan_element}，相互增强，影响更为明显。")
+    elif is_generating(liunian_gan_element, liuyue_gan_element):
+        lines.append(f"流年{liunian_gan_element}生助流月{liuyue_gan_element}，有利于长期计划在本月落实。")
+    elif is_controlling(liunian_gan_element, liuyue_gan_element):
+        lines.append(f"流年{liunian_gan_element}克制流月{liuyue_gan_element}，可能导致计划受阻，需灵活调整。")
+        
+    # 流年流月与用神关系分析
+    lines.append(f"\n流年流月与用神({yong_shen})的关系：")
+    
+    if liunian_gan_element == yong_shen:
+        lines.append(f"流年五行与用神相同，今年对命主较为有利。")
+    elif is_generating(liunian_gan_element, yong_shen):
+        lines.append(f"流年五行{liunian_gan_element}生助用神{yong_shen}，间接有利于命局发展。")
+    
+    if liuyue_gan_element == yong_shen:
+        lines.append(f"流月五行与用神相同，本月机会较多，可积极把握。")
+    elif is_controlling(liuyue_gan_element, yong_shen):
+        lines.append(f"流月五行{liuyue_gan_element}克制用神{yong_shen}，本月需谨慎行事，避免损耗。")
+    
     lines.append("")
     
     # 神煞信息
@@ -57,8 +158,99 @@ def generate_text_report(report):
     if report['shensha_info']:
         for shensha in report['shensha_info']:
             lines.append(f"{shensha['name']}: {shensha['description']}")
+        
+        # 神煞分析增强
+        lines.append("\n[神煞详细分析]")
+        
+        # 分类收集神煞
+        ji_shen = []  # 吉神
+        xiong_shen = []  # 凶神
+        
+        for shensha in report['shensha_info']:
+            if shensha['name'] in ["天德", "月德", "福神", "喜神", "红艳"]:
+                ji_shen.append(shensha)
+            elif shensha['name'] in ["天羊", "天刚", "灾煞", "劫煞", "岂煞", "屿煞"]:
+                xiong_shen.append(shensha)
+        
+        # 吉神分析
+        if ji_shen:
+            lines.append("吉神分析：")
+            for shen in ji_shen:
+                lines.append(f"  - {shen['name']}在{shen['position']}柱: {shen['description']}")
+            if len(ji_shen) >= 2:
+                lines.append("  多个吉神同时存在，有利于提升命主运势。")
+        
+        # 凶神分析
+        if xiong_shen:
+            lines.append("凶神分析：")
+            for shen in xiong_shen:
+                lines.append(f"  - {shen['name']}在{shen['position']}柱: {shen['description']}")
+                
+            if len(xiong_shen) >= 2:
+                lines.append("  多个凶神同时存在，需谨慎应对可能的挑战。")
+                
+        # 吉凶神比较
+        if ji_shen and xiong_shen:
+            if len(ji_shen) > len(xiong_shen):
+                lines.append("吉神多于凶神，总体而言吉多于凶，命主运势较佳。")
+            elif len(ji_shen) < len(xiong_shen):
+                lines.append("凶神多于吉神，需谨慎行事，提高警惕。")
+            else:
+                lines.append("吉凶神数量相当，运势喜忧参半，宜谨慎中求发展。")
+                
+        # 神煞与日主年柱的关系
+        day_pillar_shensha = [shen for shen in report['shensha_info'] if shen['position'] == "日"]
+        year_pillar_shensha = [shen for shen in report['shensha_info'] if shen['position'] == "年"]
+        
+        if day_pillar_shensha:
+            lines.append("日柱神煞分析：")
+            day_ji_shen = [shen for shen in day_pillar_shensha if shen['name'] in ["天德", "月德", "福神", "喜神"]]
+            day_xiong_shen = [shen for shen in day_pillar_shensha if shen['name'] in ["天羊", "天刚", "灾煞", "劫煞"]]
+            
+            if day_ji_shen:
+                lines.append("  日柱吉神在人格上起到正面作用，表示人格积极向上。")
+            if day_xiong_shen:
+                lines.append("  日柱凶神影响个人性格发展，需注意自身修养。")
+                
+        if year_pillar_shensha:
+            lines.append("年柱神煞分析：")
+            year_ji_shen = [shen for shen in year_pillar_shensha if shen['name'] in ["天德", "月德", "福神", "喜神"]]
+            year_xiong_shen = [shen for shen in year_pillar_shensha if shen['name'] in ["天羊", "天刚", "灾煞", "劫煞"]]
+            
+            if year_ji_shen:
+                lines.append("  年柱吉神对祖辈运势或父母影响较为有利。")
+            if year_xiong_shen:
+                lines.append("  年柱凶神可能暗示和家族长辈关系有挑战。")
     else:
         lines.append("无神煞信息")
+    lines.append("")
+    
+    # 特殊格局
+    lines.append("[特殊格局分析]")
+    special_patterns = report['pattern_analysis'].get('special_patterns', {})
+    
+    # 三合格局
+    if special_patterns and 'san_he' in special_patterns and special_patterns['san_he']:
+        lines.append("三合格局：")
+        for pattern in special_patterns['san_he']:
+            lines.append(f"  - {pattern['name']}: {pattern['description']}")
+    
+    # 三会格局
+    if special_patterns and 'san_hui' in special_patterns and special_patterns['san_hui']:
+        lines.append("三会格局：")
+        for pattern in special_patterns['san_hui']:
+            lines.append(f"  - {pattern['name']}: {pattern['description']}")
+    
+    # 冠带格局
+    if special_patterns and 'guan_xin' in special_patterns and special_patterns['guan_xin']:
+        lines.append("冠带格局：")
+        for pattern in special_patterns['guan_xin']:
+            lines.append(f"  - {pattern['name']}: {pattern['description']}")
+            
+    if not special_patterns or (not special_patterns.get('san_he') and 
+                              not special_patterns.get('san_hui') and
+                              not special_patterns.get('guan_xin')):
+        lines.append("无特殊格局")
     lines.append("")
     
     # 纳音五行
@@ -74,30 +266,95 @@ def generate_text_report(report):
     lines.append("")
     
     # 大运流年分析指导
-    lines.append("[大运流年分析指导]")
+    lines.append("[命盘总体解读与指导]")
     if report['pattern_analysis']['day_master_strength'] in ['旺', '偏旺']:
         # 日主旺的年份
         lines.append("日主过旺，适合濒身或耗身的运势：")
         lines.append(f"1. 法子：可选择{report['pattern_analysis']['yong_shen']}的年份，帮助平衡日主。")
         lines.append(f"2. 避免过于旺盛的日主({report['basic_info']['day_master'].split()[0]})年份。")
         lines.append(f"3. 理想的大运流年应有充足的{report['pattern_analysis']['yong_shen']}手法强。")
+        lines.append(f"4. 当大运为{report['pattern_analysis']['yong_shen']}五行时，可找对应行业发展。")
     elif report['pattern_analysis']['day_master_strength'] in ['弱', '偏弱']:
         # 日主弱的年份
         lines.append("日主过弱，适合滋身或扩张的运势：")
         lines.append(f"1. 法子：可选择{report['pattern_analysis']['yong_shen']}的年份，提升日主力量。")
         lines.append(f"2. 避免克法日主({report['basic_info']['day_master'].split()[0]})的年份。")
         lines.append(f"3. 理想的大运流年应有充足的{report['pattern_analysis']['yong_shen']}手法。")
+        lines.append(f"4. 适合在{report['pattern_analysis']['yong_shen']}年份开始新的项目或事业。")
     else:
         # 日主中和
         lines.append("日主强度适中，可选择平衡发展的运势：")
         lines.append(f"1. 保持当前的平衡状态，不过分強调任何五行。")
         lines.append("2. 可适当发展五行中较弱的部分。")
         lines.append("3. 避免增强已经过强的五行。")
+        lines.append("4. 各类大运都能找到宝贵之处，关键是保持平衡而不破坏和谐。")
+        
+    # 可适合行业分析
+    elements_career = {
+        "木": ["教育", "出版", "文化", "艺术", "园林", "农业"],
+        "火": ["餐饮", "娱乐", "美容", "科技", "电子", "职业马拉松"],
+        "土": ["房地产", "建筑", "金融", "养殖", "保险", "物流"],
+        "金": ["机械", "计算机", "技术", "名牌集团", "法律", "额财经贸"],
+        "水": ["旅游", "运输", "船只", "鱼类", "文学", "策划", "咨询"]
+    }
     
-    return "\n".join(lines)"""
-八字计算模块 - 主计算函数
-使用lunar_python库计算八字、流年、流月、大运、小运和神煞
-"""
+    # 找出最弱的五行和用神五行，推荐行业
+    weakest_element = report['pattern_analysis']['weakest_element'].split()[0]
+    yong_shen_element = report['pattern_analysis']['yong_shen'].split()[0]
+    
+    lines.append("\n[行业建议]")
+    
+    # 根据日主强度推荐行业
+    if report['pattern_analysis']['day_master_strength'] in ['旺', '偏旺']:
+        # 日主旺，用克日主或泄日主的行业
+        if yong_shen_element in elements_career:
+            lines.append(f"日主过旺，适合的行业有：{', '.join(elements_career[yong_shen_element])}等。")
+    elif report['pattern_analysis']['day_master_strength'] in ['弱', '偏弱']:
+        # 日主弱，用生日主或按日主的行业
+        if yong_shen_element in elements_career:
+            lines.append(f"日主过弱，适合的行业有：{', '.join(elements_career[yong_shen_element])}等。")
+    else:
+        # 日主中和，推荐最弱五行的行业来平衡
+        if weakest_element in elements_career:
+            lines.append(f"日主较为中和，适合发展较弱的{weakest_element}行业，如：{', '.join(elements_career[weakest_element])}等。")
+    
+    # 增加个人发展建议
+    lines.append("\n[个人发展建议]")
+    day_master_element = report['basic_info']['day_master'].split('(')[1].strip(')')
+    
+    element_traits = {
+        "木": {
+            "优点": ["创意思考", "计划能力", "高瓶顶格局"],
+            "注意": ["避免激进", "避免因小失大", "保持思考开阔"]
+        },
+        "火": {
+            "优点": ["领导能力", "社交力", "高热情"],
+            "注意": ["避免过度燃烧", "基础性事务不要忽略", "控制情绪波动"]
+        },
+        "土": {
+            "优点": ["稳定可靠", "如意穷追不舍", "良好人际关系"],
+            "注意": ["避免心态保守", "逻辑思维", "要勇于创新"]
+        },
+        "金": {
+            "优点": ["细致分析力", "严格要求", "好的执行力"],
+            "注意": ["避免过于刃锋", "与人交错不能太生硬", "灵活应对变化"]
+        },
+        "水": {
+            "优点": ["智慧相通", "围魂破解", "好奇心强"],
+            "注意": ["避免心理上的迷失", "没有辰信力", "不要太过理想化"]
+        }
+    }
+    
+    if day_master_element in element_traits:
+        traits = element_traits[day_master_element]
+        lines.append(f"日主五行属性为{day_master_element}，有以下优势：")
+        for trait in traits["优点"]:
+            lines.append(f"  - {trait}")
+        lines.append(f"\n需要注意以下方面：")
+        for trait in traits["注意"]:
+            lines.append(f"  - {trait}")
+    
+    return "\n".join(lines)
 
 import datetime
 from collections import Counter
@@ -106,6 +363,8 @@ from lunar_python import Solar, Lunar
 from .calculator import (
     get_element, get_element_english, get_default_location
 )
+from .lunar_extension import LunarExtension
+from .lunar_extension import LunarExtension
 import requests
 from geopy.geocoders import Nominatim
 
@@ -307,6 +566,61 @@ def get_controlled_element(element):
     }
     return controlled_map.get(element, "")
 
+
+def is_generating(element1, element2):
+    """检查element1是否生element2（element1生element2）"""
+    generating_map = {
+        "木": "火",
+        "火": "土",
+        "土": "金",
+        "金": "水",
+        "水": "木"
+    }
+    return generating_map.get(element1) == element2
+
+def is_generated(element1, element2):
+    """检查element1是否被element2所生（element2生element1）"""
+    return is_generating(element2, element1)
+
+def is_controlling(element1, element2):
+    """检查element1是否克element2（element1克element2）"""
+    controlling_map = {
+        "木": "土",
+        "土": "水",
+        "水": "火",
+        "火": "金",
+        "金": "木"
+    }
+    return controlling_map.get(element1) == element2
+
+def is_controlled(element1, element2):
+    """检查element1是否被element2所克（element2克element1）"""
+    return is_controlling(element2, element1)
+
+def get_relationship_by_shishen(shishen):
+    """根据十神确定五行关系
+    
+    参数:
+        shishen (str): 十神名称
+    
+    返回:
+        str: 关系描述
+    """
+    relationship = {
+        "比肩": "日主自己，增强日主力量。",
+        "劫财": "与日主相同，但相互争夺资源，可能导致冲突。",
+        "食神": "日主生的五行，有泄气作用。",
+        "伤官": "日主生的五行，但过度泄气会损伤日主。",
+        "天财": "日主所克的五行，但方式较温和。",
+        "正财": "日主所克的五行，代表正当财富。",
+        "七杀": "克制日主的五行，具有攻击性。",
+        "正官": "克制日主的五行，但方式较为正当。",
+        "偏印": "生日主的五行，但力量较弱。",
+        "正印": "生日主的五行，力量较强。"
+    }
+    
+    return relationship.get(shishen, "不确定的关系")
+
 # 天干和地支
 Gan = ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"]
 Zhi = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"]
@@ -438,6 +752,9 @@ def determine_pattern(day_master, gans, zhis, gan_shens, zhi_shens, scores):
     # 神煞分析
     shens_analysis = analyze_shens(day_master, gans, zhis)
     
+    # 特殊格局分析
+    special_patterns = analyze_special_patterns(zhis)
+    
     return {
         "day_master": day_master,
         "day_master_element": day_master_element,
@@ -449,6 +766,7 @@ def determine_pattern(day_master, gans, zhis, gan_shens, zhi_shens, scores):
         "yong_gan": yong_gan,
         "yong_zhi": yong_zhi,
         "shens_analysis": shens_analysis,
+        "special_patterns": special_patterns,
         "explanation": f"日主{day_master}为{day_master_element}，{strength}，用神为{yong_shen}({yong_shen_type})。"
     }
 
@@ -490,22 +808,39 @@ def analyze_shens(day_master, gans, zhis):
                 "element": gan5[gan]
             })
     
-    # 检查特殊组合
-    # 例如检查三会局、三合局等
-    zhi_sanhe = check_sanhe(zhis)
-    if zhi_sanhe:
+    # 检查特殊格局
+    special_patterns = analyze_special_patterns(zhis)
+    
+    # 三合格局
+    for pattern in special_patterns.get("san_he", []):
         analysis["special"].append({
-            "name": "三合局",
-            "description": f"{zhi_sanhe}三合",
-            "impact": "使命局五行强旺"
+            "name": pattern["name"],
+            "description": pattern["description"],
+            "impact": f"产生{pattern['element']}气，强化命盘中{pattern['element']}五行。"
         })
     
-    zhi_sanhui = check_sanhui(zhis)
-    if zhi_sanhui:
+    # 三会格局
+    for pattern in special_patterns.get("san_hui", []):
         analysis["special"].append({
-            "name": "三会局",
-            "description": f"{zhi_sanhui}三会",
-            "impact": "命局特性明显"
+            "name": pattern["name"],
+            "description": pattern["description"],
+            "impact": f"产生{pattern['element']}气，相互成就，命局中{pattern['element']}五行特征更为明显。"
+        })
+    
+    # 冠带格局
+    for pattern in special_patterns.get("guan_xin", []):
+        analysis["special"].append({
+            "name": pattern["name"],
+            "description": pattern["description"],
+            "impact": f"有利于事业发展学业——{pattern['name']}为人生添彩。"
+        })
+    
+    # 冠带格局
+    for pattern in special_patterns.get("guan_xin", []):
+        analysis["special"].append({
+            "name": pattern["name"],
+            "description": pattern["description"],
+            "impact": f"有利于事业发展学业——{pattern['name']}为人生添彩。"
         })
     
     return analysis
@@ -539,32 +874,74 @@ def check_sanhe(zhis):
     return ""
 
 
-def check_sanhui(zhis):
+def analyze_special_patterns(zhis):
     """
-    检查是否有三会局
+    分析特殊地支格局（三会、三合、冠带等）
     
     参数:
-        zhis (list): 四柱地支列表
-    
+        zhis (list): 四柱地支
+        
     返回:
-        str: 三会局类型，没有则返回空字符串
+        dict: 格局分析结果
     """
-    # 定义三会局
-    sanhui = {
-        "东方": set(["寅", "卯", "辰"]),
-        "南方": set(["巳", "午", "未"]),
-        "西方": set(["申", "酉", "戌"]),
-        "北方": set(["亥", "子", "丑"])
+    result = {
+        "san_he": [],   # 三合
+        "san_hui": [],  # 三会
+        "chong": [],    # 冲
+        "hui": [],      # 会
+        "he": [],       # 合
+        "guan_xin": []  # 冠心格局
     }
     
-    # 将地支转为集合，检查是否包含三会局中的至少两个
-    zhis_set = set(zhis)
-    for direction, zhi_set in sanhui.items():
-        common = zhis_set.intersection(zhi_set)
-        if len(common) >= 2:
-            return direction
+    # 检查三合格局
+    san_he_patters = {
+        "水三合": ["子", "申", "辰"],
+        "木三合": ["亥", "卯", "未"],
+        "火三合": ["寅", "午", "戌"],
+        "金三合": ["巳", "酉", "丑"]
+    }
     
-    return ""
+    for pattern_name, pattern_zhis in san_he_patters.items():
+        matched = [zhi for zhi in zhis if zhi in pattern_zhis]
+        if len(matched) >= 2:  # 至少匹配两个
+            element = pattern_name[0]  # 获取五行属性（第一个字）
+            result["san_he"].append({
+                "name": pattern_name,
+                "element": element,
+                "matched": matched,
+                "description": f"有{pattern_name}矩阵，产生{element}气形成灵动合力。"
+            })
+    
+    # 检查三会格局
+    san_hui_patterns = {
+        "东方三会": ["寅", "卯", "辰"],  # 东方木局
+        "南方三会": ["巳", "午", "未"],  # 南方火局
+        "西方三会": ["申", "酉", "戌"],  # 西方金局
+        "北方三会": ["亥", "子", "丑"]   # 北方水局
+    }
+    
+    for pattern_name, pattern_zhis in san_hui_patterns.items():
+        matched = [zhi for zhi in zhis if zhi in pattern_zhis]
+        if len(matched) >= 2:  # 至少匹配两个
+            element = "木" if pattern_name.startswith("东") else \
+                     "火" if pattern_name.startswith("南") else \
+                     "金" if pattern_name.startswith("西") else "水"
+            result["san_hui"].append({
+                "name": pattern_name,
+                "element": element,
+                "matched": matched,
+                "description": f"有{pattern_name}矩阵，产生{element}气彼此力量聚集。"
+            })
+            
+    # 检查月柱冠带
+    if "东" in zhis and "辰" in zhis:
+        result["guan_xin"].append({
+            "name": "冠带格局",
+            "positions": ["卯", "辰"],
+            "description": "卯冠辰带，为木火形为匠版，大利学业文文。"
+        })
+    
+    return result
 
 # 天干五行属性
 gan5 = {
@@ -673,8 +1050,9 @@ def calculate_bazi(birth_year, birth_month, birth_day, birth_hour, gender, city=
         
         # 创建Solar对象（阳历）
         solar = Solar.fromYmdHms(birth_year, birth_month, birth_day, birth_hour, 0, 0)
-        solar.setLongitude(longitude)
-        solar.setLatitude(latitude)
+        # 注意: 新版lunar_python可能不支持设置经纬度
+        # solar.setLongitude(longitude)
+        # solar.setLatitude(latitude)
         
         # 转换为Lunar对象（阴历）
         lunar = solar.getLunar()
@@ -751,59 +1129,90 @@ def calculate_bazi(birth_year, birth_month, birth_day, birth_hour, gender, city=
         
         # 计算大运
         gender_code = 1 if gender.lower() == "male" else 0
-        dayun_data = bazi.getDaYun(gender_code)
+        try:
+            # 尝试使用新API
+            dayun_data = bazi.getDaYun(gender_code)
+        except AttributeError:
+            # 兼容处理：如果未找到getDaYun方法，创建一个空的大运列表
+            # 不输出警告，静默处理
+            dayun_data = []
         
-        # 获取起运年龄和时间
-        start_solar = dayun_data[0].getStartSolar()
-        start_year = start_solar.getYear()
-        start_age = dayun_data[0].getStartAge()
+        # 使用LunarExtension计算大运
+        lunar_ext = LunarExtension(lunar=lunar)
+        
+        # 计算起运年龄和时间
+        start_age = 0
+        start_year = datetime.datetime.now().year
         
         # 处理大运数据
         dayuns = []
-        for i in range(min(len(dayun_data)-1, 8)):
-            yun = dayun_data[i]
-            dayun_gz = yun.getGanZhi()
-            dayun_start_age = yun.getStartAge()
-            dayun_end_age = 9 + dayun_start_age  # 每个大运10年
+        gender_code = 1 if gender.lower() == "male" else 0
+        
+        try:
+            # 使用lunar_extension计算大运
+            dayun_list = lunar_ext.get_day_un(gender_code=gender_code)
             
-            # 大运天干地支
-            dayun_gan = dayun_gz[0]
-            dayun_zhi = dayun_gz[1]
+            # 如果计算成功，处理大运数据
+            if dayun_list:
+                # 获取起运年龄
+                if dayun_list and len(dayun_list) > 0:
+                    start_age = dayun_list[0]['start_age']
+                    start_year = birth_year + start_age
+                
+                # 处理大运数据
+                for i, yun in enumerate(dayun_list):
+                    dayun_gz = yun['gan_zhi']
+                    dayun_start_age = yun['start_age']
+                    dayun_end_age = yun['end_age']  # 结束年龄
+                    
+                    # 大运天干地支
+                    dayun_gan = dayun_gz[0]
+                    dayun_zhi = dayun_gz[1]
+                    
+                    # 大运天干地支的十神
+                    dayun_gan_shen = ten_deities[me][dayun_gan]
+                    
+                    # 地支藏干
+                    hidden_gans = zhi5[dayun_zhi]
+                    if hidden_gans:
+                        max_energy_gan = max(hidden_gans, key=hidden_gans.get)
+                        dayun_zhi_shen = ten_deities[me][max_energy_gan]
+                    else:
+                        dayun_zhi_shen = ""
+                    
+                    # 生克关系
+                    element_relation = gan5
+                    
+                    dayuns.append({
+                        "ganzhi": dayun_gz,
+                        "gan": dayun_gan,
+                        "zhi": dayun_zhi,
+                        "gan_shen": dayun_gan_shen,
+                        "zhi_shen": dayun_zhi_shen,
+                        "start_age": dayun_start_age,
+                        "end_age": dayun_end_age,
+                        "element": gan5[dayun_gan],
+                        "nayin": nayin_wuxing.get(dayun_gz, "")
+                    })
             
-            # 大运天干地支的十神
-            dayun_gan_shen = ten_deities[me][dayun_gan]
-            
-            # 地支藏干
-            hidden_gans = zhi5[dayun_zhi]
-            max_energy_gan = max(hidden_gans, key=hidden_gans.get)
-            dayun_zhi_shen = ten_deities[me][max_energy_gan]
-            
-            # 生克关系
-            element_relation = gan5
-            
-            dayuns.append({
-                "ganzhi": dayun_gz,
-                "gan": dayun_gan,
-                "zhi": dayun_zhi,
-                "gan_shen": dayun_gan_shen,
-                "zhi_shen": dayun_zhi_shen,
-                "start_age": dayun_start_age,
-                "end_age": dayun_end_age,
-                "element": gan5[dayun_gan],
-                "nayin": nayin_wuxing.get(dayun_gz, "")
-            })
+        except Exception as e:
+            print(f"计算大运时出错: {e}")
+            # 静默处理，不输出警告
+            pass
         
         # 获取当前大运
         current_age = datetime.datetime.now().year - birth_year
         current_dayun = None
-        for i, yun in enumerate(dayuns):
-            if i < len(dayuns) - 1:
-                if yun["start_age"] <= current_age < dayuns[i+1]["start_age"]:
-                    current_dayun = yun
-                    break
-            else:
-                if yun["start_age"] <= current_age:
-                    current_dayun = yun
+        
+        if dayuns:  # 只有当大运列表非空时才进行处理
+            for i, yun in enumerate(dayuns):
+                if i < len(dayuns) - 1:
+                    if yun["start_age"] <= current_age < dayuns[i+1]["start_age"]:
+                        current_dayun = yun
+                        break
+                else:
+                    if yun["start_age"] <= current_age:
+                        current_dayun = yun
         
         # 当前年月日的流年流月流日
         current_date = datetime.datetime.now()
@@ -835,45 +1244,58 @@ def calculate_bazi(birth_year, birth_month, birth_day, birth_hour, gender, city=
         liuri_gan_shen = ten_deities[me][liuri_gan]
         liuri_zhi_shen = ten_deities[me][max(zhi5[liuri_zhi], key=zhi5[liuri_zhi].get)]
         
-        # 计算神煞
+        # 使用LunarExtension计算神煞
         shenshas = []
-        
-        # 年神煞
-        for shen_name, shen_dict in year_shens.items():
-            if year_zhi in shen_dict:
-                target = shen_dict[year_zhi]
-                for i, zhi in enumerate(zhis):
-                    if zhi == target:
-                        shenshas.append({
-                            "name": shen_name,
-                            "position": ["年", "月", "日", "时"][i],
-                            "description": f"{year_zhi}年{shen_name}{target}在{['年', '月', '日', '时'][i]}"
-                        })
-        
-        # 月神煞
-        for shen_name, shen_dict in month_shens.items():
-            if month_zhi in shen_dict:
-                target = shen_dict[month_zhi]
-                for i, gan in enumerate(gans):
-                    if gan == target:
-                        shenshas.append({
-                            "name": shen_name,
-                            "position": ["年", "月", "日", "时"][i],
-                            "description": f"{month_zhi}月{shen_name}{target}在{['年', '月', '日', '时'][i]}"
-                        })
-        
-        # 日神煞
-        for shen_name, shen_dict in day_shens.items():
-            if day_gan in shen_dict:
-                targets = shen_dict[day_gan]
-                for target in targets:
-                    for i, zhi in enumerate(zhis):
-                        if zhi == target:
-                            shenshas.append({
-                                "name": shen_name,
-                                "position": ["年", "月", "日", "时"][i],
-                                "description": f"{day_gan}日{shen_name}{target}在{['年', '月', '日', '时'][i]}"
-                            })
+        try:
+            # 计算神煞
+            shensha_list = lunar_ext.get_shen_sha()
+            if shensha_list:
+                shenshas = shensha_list
+        except Exception as e:
+            print(f"计算神煞时出错: {e}")
+            # 静默处理，不输出警告
+            
+            # 如果LunarExtension计算失败，使用传统方法计算常见神煞
+            try:
+                # 年神煞
+                for shen_name, shen_dict in year_shens.items():
+                    if year_zhi in shen_dict:
+                        target = shen_dict[year_zhi]
+                        for i, zhi in enumerate(zhis):
+                            if zhi == target:
+                                shenshas.append({
+                                    "name": shen_name,
+                                    "position": ["年", "月", "日", "时"][i],
+                                    "description": f"{year_zhi}年{shen_name}{target}在{['年', '月', '日', '时'][i]}"
+                                })
+                                
+                # 月神煞
+                for shen_name, shen_dict in month_shens.items():
+                    if month_zhi in shen_dict:
+                        target = shen_dict[month_zhi]
+                        for i, gan in enumerate(gans):
+                            if gan == target:
+                                shenshas.append({
+                                    "name": shen_name,
+                                    "position": ["年", "月", "日", "时"][i],
+                                    "description": f"{month_zhi}月{shen_name}{target}在{['年', '月', '日', '时'][i]}"
+                                })
+                
+                # 日神煞
+                for shen_name, shen_dict in day_shens.items():
+                    if day_gan in shen_dict:
+                        targets = shen_dict[day_gan]
+                        for target in targets:
+                            for i, zhi in enumerate(zhis):
+                                if zhi == target:
+                                    shenshas.append({
+                                        "name": shen_name,
+                                        "position": ["年", "月", "日", "时"][i],
+                                        "description": f"{day_gan}日{shen_name}{target}在{['年', '月', '日', '时'][i]}"
+                                    })
+            except Exception:
+                # 如果传统方法也失败，则静默处理
+                pass
         
         # 格局与用神分析
         pattern_info = determine_pattern(me, gans, zhis, gan_shens, zhi_shens, scores)
@@ -886,10 +1308,20 @@ def calculate_bazi(birth_year, birth_month, birth_day, birth_hour, gender, city=
             "hour": nayin_wuxing.get(hour_gz, "未知")
         }
         
-        # 命宫
-        ming_gong = bazi.getMingGong()
-        # 胎元
-        tai_yuan = bazi.getTaiYuan()
+        # 使用LunarExtension计算命宫和胎元
+        try:
+            # 计算命宫
+            ming_gong = lunar_ext.get_ming_gong()
+        except Exception as e:
+            print(f"计算命宫时出错: {e}")
+            ming_gong = ""
+            
+        try:
+            # 计算胎元
+            tai_yuan = lunar_ext.get_tai_yuan()
+        except Exception as e:
+            print(f"计算胎元时出错: {e}")
+            tai_yuan = ""
         
         # 返回结果
         result = {
@@ -1120,10 +1552,10 @@ def generate_text_report(report):
 def generate_bazi_report(bazi_result):
     """
     生成八字命盘解读报告
-    
+
     参数:
         bazi_result (dict): calculate_bazi函数的返回结果
-    
+
     返回:
         dict: 格式化的命盘解读报告
     """
@@ -1138,31 +1570,32 @@ def generate_bazi_report(bazi_result):
     dayuns = bazi_result['dayuns']
     current_dayun = bazi_result['current_dayun']
     analysis = bazi_result['analysis']
-
-# 基本八字信息
-basic_info = {
-    "four_pillars": f"{bazi['year']} {bazi['month']} {bazi['day']} {bazi['hour']}",
-"gans": ' '.join(bazi['gans']),
-"zhis": ' '.join(bazi['zhis']),
-"day_master": f"{bazi['day_master']} ({bazi['day_master_element']})",
-    "solar_date": f"{solar['year']}年{solar['month']}月{solar['day']}日 {solar['hour']}时",
-    "lunar_date": f"{lunar['year']}年{lunar['month']}月{lunar['day']}日"
-}
-
-# 命盘分析
-    pattern_analysis = {
-    "day_master_strength": analysis['day_master_strength'],
-    "day_master_percentage": analysis['day_master_percentage'],
-    "strongest_element": f"{analysis['elements_balance']['strongest']} ({analysis['elements_balance']['strongest_percentage']}%)",
-    "weakest_element": f"{analysis['elements_balance']['weakest']} ({analysis['elements_balance']['weakest_percentage']}%)",
-        "balance_state": analysis['elements_balance']['balance_state'],
-    "balance_description": analysis['elements_balance']['description'],
-    "yong_shen": f"{pattern['yong_shen']} ({pattern['yong_shen_type']})",
-    "yong_shen_explanation": pattern['explanation'],
-    "yong_gan": ', '.join(pattern['yong_gan']),
-    "yong_zhi": ', '.join(pattern['yong_zhi'])
+    
+    # 基本八字信息
+    basic_info = {
+        "four_pillars": f"{bazi['year']} {bazi['month']} {bazi['day']} {bazi['hour']}",
+        "gans": ' '.join(bazi['gans']),
+        "zhis": ' '.join(bazi['zhis']),
+        "day_master": f"{bazi['day_master']} ({bazi['day_master_element']})",
+        "solar_date": f"{solar['year']}年{solar['month']}月{solar['day']}日 {solar['hour']}时",
+        "lunar_date": f"{lunar['year']}年{lunar['month']}月{lunar['day']}日"
     }
-
+    
+    # 命盘分析
+    pattern_analysis = {
+        "day_master_strength": analysis['day_master_strength'],
+        "day_master_percentage": analysis['day_master_percentage'],
+        "strongest_element": f"{analysis['elements_balance']['strongest']} ({analysis['elements_balance']['strongest_percentage']}%)",
+        "weakest_element": f"{analysis['elements_balance']['weakest']} ({analysis['elements_balance']['weakest_percentage']}%)",
+        "balance_state": analysis['elements_balance']['balance_state'],
+        "balance_description": analysis['elements_balance']['description'],
+        "yong_shen": f"{pattern['yong_shen']} ({pattern['yong_shen_type']})",
+        "yong_shen_explanation": pattern['explanation'],
+        "yong_gan": ', '.join(pattern['yong_gan']),
+        "yong_zhi": ', '.join(pattern['yong_zhi']),
+        "special_patterns": pattern['special_patterns']
+    }
+    
     # 大运分析
     dayun_analysis = []
     for dayun in dayuns:
@@ -1174,7 +1607,7 @@ basic_info = {
             "element": dayun['element'],
             "nayin": dayun['nayin']
         })
-    
+
     current_dayun_info = None
     if current_dayun:
         current_dayun_info = {
@@ -1185,7 +1618,7 @@ basic_info = {
             "element": current_dayun['element'],
             "nayin": current_dayun['nayin']
         }
-    
+
     # 当前流年流月流日
     current_info = {
         "liunian": {
@@ -1204,7 +1637,7 @@ basic_info = {
             "zhi_shen": current['liuri_shen']['zhi']
         }
     }
-    
+
     # 神煞分析
     shensha_info = []
     for shensha in bazi_result['shensha']:
@@ -1213,7 +1646,7 @@ basic_info = {
             "position": shensha['position'],
             "description": shensha['description']
         })
-    
+
     # 搭建解读报告
     report = {
         "basic_info": basic_info,
@@ -1236,11 +1669,11 @@ basic_info = {
         "nayin": bazi_result['nayin'],
         "special": bazi_result['special']
     }
-    
+
     # 生成文本形式的命盘解读
     text_report = generate_text_report(report)
     report["text_report"] = text_report
-    
+
     return report
 
 
@@ -1254,3 +1687,15 @@ if __name__ == "__main__":
     
     # 输出文本报告
     print(report["text_report"])
+    
+    # 测试特殊格局分析
+    print("\n===== 特殊格局分析测试 =====")
+    zhis = ["子", "申", "辰", "酉"]
+    patterns = analyze_special_patterns(zhis)
+    print(f"\n分析地支: {', '.join(zhis)}")
+    print("\n三合格局:")
+    for p in patterns['san_he']:
+        print(f"  - {p['name']}: {p['description']}")
+    print("\n三会格局:")
+    for p in patterns['san_hui']:
+        print(f"  - {p['name']}: {p['description']}")

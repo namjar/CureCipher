@@ -1,0 +1,23 @@
+{
+  "positive_impacts": [],
+  "negative_impacts": [],
+  "health_advice": [],
+  "overall_analysis": {
+    "positive_count": 0,
+    "negative_count": 0,
+    "tendency": "吉凶参半",
+    "day_master_impact": "吉凶神相性相当，对日主健康影响中性",
+    "health_analysis": {
+      "overall_status": "总体健康状况平衡",
+      "focus_advice": "建议均衡关注各方面健康:",
+      "health_strengths": [],
+      "health_weaknesses": [],
+      "body_systems_to_focus": [
+        "肾脏",
+        "泌尿系统",
+        "生殖系统",
+        "骨骼"
+      ]
+    }
+  }
+}

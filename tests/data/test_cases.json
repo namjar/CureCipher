@@ -1,0 +1,106 @@
+# /Users/ericw/Documents/GitHub/CureCipher/tests/data/test_cases.json
+{
+  "verified_cases": [
+    {
+      "input": {
+        "year": 1990,
+        "month": 5,
+        "day": 15,
+        "hour": 12,
+        "gender": "male",
+        "city": "Beijing"
+      },
+      "expected": {
+        "four_pillars": "庚午 壬午 戊戌 戊午",
+        "day_master": "戊",
+        "day_master_element": "土",
+        "yong_shen": "火",
+        "strongest_element": "火"
+      }
+    },
+    {
+      "input": {
+        "year": 1985,
+        "month": 1,
+        "day": 1,
+        "hour": 0,
+        "gender": "female",
+        "city": "Shanghai"
+      },
+      "expected": {
+        "four_pillars": "甲子 壬子 丙子 甲子",
+        "day_master": "丙",
+        "day_master_element": "火",
+        "yong_shen": "木",
+        "strongest_element": "水"
+      }
+    },
+    {
+      "input": {
+        "year": 1978,
+        "month": 8,
+        "day": 18,
+        "hour": 14,
+        "gender": "male",
+        "city": "Guangzhou"
+      },
+      "expected": {
+        "four_pillars": "戊午 辛酉 辛未 庚申",
+        "day_master": "辛",
+        "day_master_element": "金",
+        "yong_shen": "水",
+        "strongest_element": "金"
+      }
+    }
+  ],
+  "special_patterns": [
+    {
+      "description": "水三合",
+      "zhis": ["子", "申", "辰", "午"],
+      "expected_san_he": ["水三合"],
+      "expected_san_hui": []
+    },
+    {
+      "description": "木三合",
+      "zhis": ["亥", "卯", "未", "子"],
+      "expected_san_he": ["木三合"],
+      "expected_san_hui": []
+    },
+    {
+      "description": "火三合",
+      "zhis": ["寅", "午", "戌", "申"],
+      "expected_san_he": ["火三合"],
+      "expected_san_hui": []
+    },
+    {
+      "description": "金三合",
+      "zhis": ["巳", "酉", "丑", "子"],
+      "expected_san_he": ["金三合"],
+      "expected_san_hui": []
+    },
+    {
+      "description": "东方三会",
+      "zhis": ["寅", "卯", "辰", "午"],
+      "expected_san_he": [],
+      "expected_san_hui": ["东方三会"]
+    },
+    {
+      "description": "南方三会",
+      "zhis": ["巳", "午", "未", "申"],
+      "expected_san_he": [],
+      "expected_san_hui": ["南方三会"]
+    },
+    {
+      "description": "西方三会",
+      "zhis": ["申", "酉", "戌", "子"],
+      "expected_san_he": [],
+      "expected_san_hui": ["西方三会"]
+    },
+    {
+      "description": "北方三会",
+      "zhis": ["亥", "子", "丑", "寅"],
+      "expected_san_he": [],
+      "expected_san_hui": ["北方三会"]
+    }
+  ]
+}

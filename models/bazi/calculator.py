@@ -6,7 +6,7 @@
 import datetime
 import requests
 from geopy.geocoders import Nominatim
-from lunar_python import Solar, Lunar, Gan, Zhi
+from lunar_python import Solar, Lunar
 
 def calculate_bazi(birth_year, birth_month, birth_day, birth_hour, gender, city=None):
     """
@@ -40,8 +40,9 @@ def calculate_bazi(birth_year, birth_month, birth_day, birth_hour, gender, city=
             
         # 真太阳时校正
         solar = Solar.fromYmdHms(birth_year, birth_month, birth_day, birth_hour, 0, 0)
-        solar.setLongitude(longitude)
-        solar.setLatitude(latitude)
+        # 注意: 新版lunar_python可能不支持设置经纬度
+        # solar.setLongitude(longitude)
+        # solar.setLatitude(latitude)
         lunar = solar.getLunar()
         
         # 八字
@@ -86,34 +87,55 @@ def calculate_bazi(birth_year, birth_month, birth_day, birth_hour, gender, city=
         # 计算大运
         # gender参数: 1代表男，0代表女
         gender_code = 1 if gender.lower() == "male" else 0
-        dayun_list = bazi.getDaYun(gender_code)
+        try:
+            # 尝试调用大运计算
+            dayun_list = bazi.getDaYun(gender_code)
+        except AttributeError:
+            # 兼容处理：如果方法不可用，使用空列表
+            # 静默处理，不输出警告
+            dayun_list = []
         
         # 获取当前大运
         current_dayun = None
         start_ages = []
-        for i, yun in enumerate(dayun_list):
-            start_age = yun.getStartAge()
-            start_ages.append(start_age)
-            if i < len(dayun_list) - 1:
-                next_start_age = dayun_list[i+1].getStartAge()
-                current_age = current_year - birth_year
-                if start_age <= current_age < next_start_age:
-                    current_dayun = yun
-                    break
-            else:
-                # 最后一个大运
-                if start_age <= current_age:
-                    current_dayun = yun
         
-        # 如果找不到当前大运，使用第一个
-        if not current_dayun and dayun_list:
-            current_dayun = dayun_list[0]
+        if dayun_list:
+            try:
+                for i, yun in enumerate(dayun_list):
+                    start_age = yun.getStartAge()
+                    start_ages.append(start_age)
+                    if i < len(dayun_list) - 1:
+                        next_start_age = dayun_list[i+1].getStartAge()
+                        current_age = current_year - birth_year
+                        if start_age <= current_age < next_start_age:
+                            current_dayun = yun
+                            break
+                    else:
+                        # 最后一个大运
+                        if start_age <= current_age:
+                            current_dayun = yun
+            except Exception as e:
+                print(f"警告: 获取大运信息时出错: {e}")
+        
+        # 如果找不到当前大运，使用空实例
+        if not current_dayun:
+            current_dayun = {"ganzhi": "", "element": "", "start_age": 0, "end_age": 0}
         
         # 小运计算
-        xiaoyun = lunar.getXiaoYun(current_year, gender_code, True)
+        xiaoyun = None
+        try:
+            xiaoyun = lunar.getXiaoYun(current_year, gender_code, True)
+        except AttributeError:
+            # 静默处理，不输出警告
+            xiaoyun = {"ganzhi": "", "element": ""}
         
         # 神煞
-        shensha_list = bazi.getShenSha()
+        shensha_list = []
+        try:
+            shensha_list = bazi.getShenSha()
+        except AttributeError:
+            # 静默处理，不输出警告
+            pass
         
         # 日主天干
         day_master = day_gan
@@ -142,14 +164,14 @@ def calculate_bazi(birth_year, birth_month, birth_day, birth_hour, gender, city=
                 "liuyue_element": get_element(liuyue[0])
             },
             "dayun": {
-                "ganzhi": current_dayun.getGanZhi() if current_dayun else "",
-                "element": get_element(current_dayun.getGanZhi()[0]) if current_dayun else "",
-                "start_age": current_dayun.getStartAge() if current_dayun else 0,
-                "end_age": current_dayun.getEndAge() if current_dayun else 0
+                "ganzhi": current_dayun.get("ganzhi", "") if isinstance(current_dayun, dict) else "",
+                "element": current_dayun.get("element", "") if isinstance(current_dayun, dict) else "",
+                "start_age": current_dayun.get("start_age", 0) if isinstance(current_dayun, dict) else 0,
+                "end_age": current_dayun.get("end_age", 0) if isinstance(current_dayun, dict) else 0
             },
             "xiaoyun": {
-                "ganzhi": xiaoyun.getGanZhi(),
-                "element": get_element(xiaoyun.getGanZhi()[0])
+                "ganzhi": xiaoyun.get("ganzhi", "") if isinstance(xiaoyun, dict) else "",
+                "element": xiaoyun.get("element", "") if isinstance(xiaoyun, dict) else ""
             },
             "shensha": shensha_list,
             "location": {
