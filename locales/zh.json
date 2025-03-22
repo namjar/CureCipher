@@ -1,0 +1,21 @@
+{
+  "app": {
+    "name": "CureCipher",
+    "description": "中医与现代科技结合的健康管理平台"
+  },
+  "nav": {
+    "home": "首页",
+    "about": "关于我们",
+    "services": "服务项目",
+    "contact": "联系我们",
+    "login": "登录",
+    "register": "注册",
+    "profile": "个人中心"
+  },
+  "user": {
+    "profile": "个人资料",
+    "settings": "设置",
+    "logout": "退出登录",
+    "history": "查询历史"
+  }
+}

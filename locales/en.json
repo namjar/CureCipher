@@ -1,0 +1,21 @@
+{
+  "app": {
+    "name": "CureCipher",
+    "description": "Health management platform combining Traditional Chinese Medicine with modern technology"
+  },
+  "nav": {
+    "home": "Home",
+    "about": "About Us",
+    "services": "Services",
+    "contact": "Contact",
+    "login": "Login",
+    "register": "Register",
+    "profile": "Profile"
+  },
+  "user": {
+    "profile": "Profile",
+    "settings": "Settings",
+    "logout": "Logout",
+    "history": "Query History"
+  }
+}

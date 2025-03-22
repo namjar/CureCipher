@@ -1,0 +1,345 @@
+{
+  "input": {
+    "birth_year": 1977,
+    "birth_month": 2,
+    "birth_day": 25,
+    "birth_hour": 20,
+    "birth_minute": 50,
+    "rounded_hour": 21,
+    "gender": "male",
+    "city": "Beijing"
+  },
+  "bazi_result": {
+    "bazi": {
+      "year": "丁巳",
+      "month": "丙寅",
+      "day": "癸巳",
+      "hour": "辛亥",
+      "day_master": "癸",
+      "day_master_element": "水"
+    },
+    "elements": {
+      "year": "火",
+      "month": "火",
+      "day": "水",
+      "hour": "金"
+    },
+    "nayin": {
+      "year": "沙中土",
+      "month": "炉中火",
+      "day": "长流水",
+      "hour": "剑锋金"
+    },
+    "current": {
+      "liunian": "乙酉",
+      "liunian_element": "木",
+      "liuyue": "丙辰",
+      "liuyue_element": "火"
+    },
+    "dayun": {
+      "ganzhi": "壬申",
+      "element": "水",
+      "start_age": 44,
+      "end_age": 54
+    },
+    "xiaoyun": {
+      "ganzhi": "乙酉",
+      "element": "木"
+    },
+    "shensha": [
+      "天乙",
+      "文昌",
+      "劫煞"
+    ],
+    "location": {
+      "city": "Beijing",
+      "latitude": 39.9042,
+      "longitude": 116.4074
+    }
+  },
+  "elements_result": {
+    "element_counts": {
+      "木": 1.0,
+      "火": 2.5,
+      "土": 1.0,
+      "金": 1.0,
+      "水": 2.5
+    },
+    "element_percentages": {
+      "木": 12.5,
+      "火": 31.25,
+      "土": 12.5,
+      "金": 12.5,
+      "水": 31.25
+    },
+    "balance_analysis": {
+      "balance_state": "稍有不平衡",
+      "description": "火偏强，土偏弱，可能需要适当调整。",
+      "std_deviation": 10.2,
+      "strongest": "火",
+      "strongest_percentage": 31.25,
+      "weakest": "土",
+      "weakest_percentage": 12.5
+    },
+    "day_master_analysis": {
+      "day_master": "水",
+      "strength": 31.25,
+      "strength_state": "偏旺",
+      "advice": "稍微抑制水，适当增强土。",
+      "relationships": {
+        "sheng_wo": "金",
+        "ke_wo": "土",
+        "wo_sheng": "木",
+        "wo_ke": "火"
+      }
+    },
+    "relations_analysis": {
+      "detailed_relations": {
+        "木": {
+          "percentage": 12.5,
+          "sheng_by": {
+            "element": "水",
+            "strength": 31.25
+          },
+          "sheng": {
+            "element": "火",
+            "strength": 31.25
+          },
+          "ke_by": {
+            "element": "金",
+            "strength": 12.5
+          },
+          "ke": {
+            "element": "土",
+            "strength": 12.5
+          }
+        },
+        "火": {
+          "percentage": 31.25,
+          "sheng_by": {
+            "element": "木",
+            "strength": 12.5
+          },
+          "sheng": {
+            "element": "土",
+            "strength": 12.5
+          },
+          "ke_by": {
+            "element": "水",
+            "strength": 31.25
+          },
+          "ke": {
+            "element": "金",
+            "strength": 12.5
+          }
+        },
+        "土": {
+          "percentage": 12.5,
+          "sheng_by": {
+            "element": "火",
+            "strength": 31.25
+          },
+          "sheng": {
+            "element": "金",
+            "strength": 12.5
+          },
+          "ke_by": {
+            "element": "木",
+            "strength": 12.5
+          },
+          "ke": {
+            "element": "水",
+            "strength": 31.25
+          }
+        },
+        "金": {
+          "percentage": 12.5,
+          "sheng_by": {
+            "element": "土",
+            "strength": 12.5
+          },
+          "sheng": {
+            "element": "水",
+            "strength": 31.25
+          },
+          "ke_by": {
+            "element": "火",
+            "strength": 31.25
+          },
+          "ke": {
+            "element": "木",
+            "strength": 12.5
+          }
+        },
+        "水": {
+          "percentage": 31.25,
+          "sheng_by": {
+            "element": "金",
+            "strength": 12.5
+          },
+          "sheng": {
+            "element": "木",
+            "strength": 12.5
+          },
+          "ke_by": {
+            "element": "土",
+            "strength": 12.5
+          },
+          "ke": {
+            "element": "火",
+            "strength": 31.25
+          }
+        }
+      },
+      "key_relations": [
+        {
+          "type": "水被克过弱",
+          "description": "土过弱，不足以克制水，水可能过于旺盛。",
+          "health_impact": "可能导致水相关的身体系统功能过度活跃。"
+        }
+      ]
+    },
+    "health_advice": {
+      "general_advice": "注意肾脏和泌尿系统健康，保持充足的睡眠，避免过度劳累，补充足够水分。",
+      "seasonal_advice": "冬季肾水当令，注意培补肾精，避免过度劳累。",
+      "health_risks": [
+        {
+          "element": "火",
+          "affected_systems": ["心", "小肠", "血脉", "舌"],
+          "risk_type": "过盛",
+          "description": "火过盛，可能导致心, 小肠, 血脉, 舌功能亢进或炎症"
+        },
+        {
+          "element": "水",
+          "affected_systems": ["肾", "膀胱", "骨髓", "耳"],
+          "risk_type": "过盛",
+          "description": "水过盛，可能导致肾, 膀胱, 骨髓, 耳功能亢进"
+        }
+      ],
+      "balance_recommendation": "火偏强，土偏弱，可能需要适当调整。",
+      "specific_recommendations": [
+        "增强土的相关功能",
+        "适当控制火的过度表现"
+      ]
+    },
+    "diet_advice": {
+      "recommended_flavors": [
+        {
+          "element": "土",
+          "flavor": "甘味",
+          "effect": "健脾益胃",
+          "nutrients": ["膳食纤维", "碳水化合物"],
+          "reason": "增强土五行"
+        },
+        {
+          "element": "金",
+          "flavor": "辛味",
+          "effect": "宣肺解表",
+          "nutrients": ["维生素A", "健康脂肪"],
+          "reason": "增强金五行"
+        }
+      ],
+      "avoid_flavors": [
+        {
+          "element": "火",
+          "flavor": "苦味",
+          "reason": "降低过盛的火五行"
+        },
+        {
+          "element": "水",
+          "flavor": "咸味",
+          "reason": "降低过盛的水五行"
+        }
+      ],
+      "seasonal_recipes": [
+        {
+          "name": "山药栗子炖鸡",
+          "ingredients": ["山药", "栗子", "鸡肉", "枸杞"],
+          "effect": "健脾益肺"
+        }
+      ],
+      "general_advice": "根据五行平衡状态，调整饮食口味和成分，以达到调和阴阳、平衡五行的目的。"
+    },
+    "exercise_advice": {
+      "recommended_exercises": [
+        {
+          "element": "土",
+          "exercise_types": ["散步", "八段锦"],
+          "effect": "健脾益胃",
+          "reason": "增强土五行"
+        },
+        {
+          "element": "金",
+          "exercise_types": ["深呼吸", "普拉提"],
+          "effect": "增强肺功能",
+          "reason": "保持金五行平衡"
+        }
+      ],
+      "general_advice": "根据五行平衡状态，选择适合的运动方式，以调节气血、平衡五行、增强体质。",
+      "frequency_advice": "每周至少进行3-5次适度运动，每次30-60分钟，以达到最佳效果。"
+    }
+  },
+  "shensha_result": {
+    "positive_impacts": [
+      {
+        "name": "天乙",
+        "description": "天乙贵人",
+        "impact": "吉神，主贵人相助，逢凶化吉",
+        "health_aspects": ["提高免疫力", "精神愉悦", "心态平和"],
+        "element_affinity": ["earth", "metal"],
+        "day_master_affinity": "一般"
+      },
+      {
+        "name": "文昌",
+        "description": "文昌星",
+        "impact": "吉神，主学业进步，智慧增长",
+        "health_aspects": ["脑力增强", "精神集中", "学习能力提高"],
+        "element_affinity": ["water", "wood"],
+        "day_master_affinity": "高"
+      }
+    ],
+    "negative_impacts": [
+      {
+        "name": "劫煞",
+        "description": "劫煞",
+        "impact": "凶神，主遭遇意外或损失",
+        "health_aspects": ["容易受伤", "免疫力下降", "情绪波动"],
+        "element_affinity": ["metal", "water"],
+        "day_master_affinity": "高",
+        "remedy": ["佩戴平安符", "多吃滋阴食物"]
+      }
+    ],
+    "health_advice": [
+      {
+        "from_shensha": "天乙",
+        "type": "positive",
+        "advice": "天乙有助于提高免疫力, 精神愉悦, 心态平和，可以适当发挥其优势。"
+      },
+      {
+        "from_shensha": "文昌",
+        "type": "positive",
+        "advice": "文昌有助于脑力增强, 精神集中, 学习能力提高，可以适当发挥其优势。"
+      },
+      {
+        "from_shensha": "劫煞",
+        "type": "negative",
+        "affected_aspects": ["容易受伤", "免疫力下降", "情绪波动"],
+        "remedy": ["佩戴平安符", "多吃滋阴食物"],
+        "advice": "劫煞可能导致容易受伤, 免疫力下降, 情绪波动，建议佩戴平安符, 多吃滋阴食物以减轻影响。"
+      }
+    ],
+    "overall_analysis": {
+      "positive_count": 2,
+      "negative_count": 1,
+      "tendency": "较为吉利",
+      "day_master_impact": "吉凶神相性相当，对日主健康影响中性",
+      "health_analysis": {
+        "overall_status": "总体健康状况良好",
+        "focus_advice": "可以重点关注以下方面来进一步提升健康水平:",
+        "health_strengths": ["提高免疫力", "精神愉悦", "心态平和", "脑力增强", "精神集中"],
+        "health_weaknesses": ["容易受伤", "免疫力下降", "情绪波动"],
+        "body_systems_to_focus": ["肾脏", "泌尿系统", "生殖系统", "骨骼"]
+      }
+    }
+  }
+}

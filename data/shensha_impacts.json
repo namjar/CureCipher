@@ -1,0 +1,45 @@
+{
+  "positive": {
+    "天乙": {
+      "description": "天乙贵人",
+      "impact": "吉神，主贵人相助，逢凶化吉",
+      "health_aspects": ["提高免疫力", "精神愉悦", "心态平和"],
+      "element_affinity": ["earth", "metal"]
+    },
+    "文昌": {
+      "description": "文昌星",
+      "impact": "吉神，主学业进步，智慧增长",
+      "health_aspects": ["脑力增强", "精神集中", "学习能力提高"],
+      "element_affinity": ["water", "wood"]
+    },
+    "禄神": {
+      "description": "禄神",
+      "impact": "吉神，主财运和事业有成",
+      "health_aspects": ["活力充沛", "代谢良好", "精力旺盛"],
+      "element_affinity": ["fire", "earth"]
+    }
+  },
+  "negative": {
+    "劫煞": {
+      "description": "劫煞",
+      "impact": "凶神，主遭遇意外或损失",
+      "health_aspects": ["容易受伤", "免疫力下降", "情绪波动"],
+      "element_affinity": ["metal", "water"],
+      "remedy": ["佩戴平安符", "多吃滋阴食物"]
+    },
+    "天哭": {
+      "description": "天哭星",
+      "impact": "凶神，主悲伤忧郁",
+      "health_aspects": ["情绪低落", "睡眠质量差", "消化不良"],
+      "element_affinity": ["wood", "fire"],
+      "remedy": ["保持心情舒畅", "适当运动", "调整饮食"]
+    },
+    "病符": {
+      "description": "病符",
+      "impact": "凶神，主疾病和健康问题",
+      "health_aspects": ["抵抗力弱", "容易患病", "恢复慢"],
+      "element_affinity": ["earth", "water"],
+      "remedy": ["规律作息", "均衡饮食", "定期检查"]
+    }
+  }
+}

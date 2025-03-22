@@ -1,0 +1,13 @@
+{
+  "base_url": "http://localhost:11434",
+  "models": {
+    "default": "llama3",
+    "chinese_medicine": "yi:34b",
+    "code_generation": "codellama:13b"
+  },
+  "parameters": {
+    "temperature": 0.7,
+    "top_p": 0.9,
+    "max_tokens": 2048
+  }
+}

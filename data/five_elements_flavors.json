@@ -1,0 +1,7 @@
+{
+  "wood": {"flavor": "酸味", "effect": "疏肝理气", "nutrients": ["维生素C", "抗氧化剂"]},
+  "fire": {"flavor": "苦味", "effect": "清心降火", "nutrients": ["益生菌", "抗氧化剂"]},
+  "earth": {"flavor": "甘味", "effect": "健脾益胃", "nutrients": ["膳食纤维", "碳水化合物"]},
+  "metal": {"flavor": "辛味", "effect": "宣肺解表", "nutrients": ["维生素A", "健康脂肪"]},
+  "water": {"flavor": "咸味", "effect": "滋肾补阴", "nutrients": ["碘", "蛋白质"]}
+}

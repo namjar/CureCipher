@@ -1,0 +1,7 @@
+{
+  "wood": {"exercise_types": ["瑜伽", "太极"], "effect": "舒展筋骨"},
+  "fire": {"exercise_types": ["快走", "慢跑"], "effect": "改善心肺功能"},
+  "earth": {"exercise_types": ["散步", "八段锦"], "effect": "健脾益胃"},
+  "metal": {"exercise_types": ["深呼吸", "普拉提"], "effect": "增强肺功能"},
+  "water": {"exercise_types": ["游泳", "气功"], "effect": "滋养肾气"}
+}
