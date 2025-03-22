@@ -2,7 +2,15 @@
 """
 五行关系单元测试
 """
+import sys
+import os
 import pytest
+
+# 确保可以导入项目模块
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
+
 from models.bazi.bazi_calculator import (
     is_generating, is_generated, is_controlling, is_controlled,
     get_relationship_by_shishen
