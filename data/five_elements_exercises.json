@@ -1,7 +1,37 @@
 {
-  "wood": {"exercise_types": ["瑜伽", "太极"], "effect": "舒展筋骨"},
-  "fire": {"exercise_types": ["快走", "慢跑"], "effect": "改善心肺功能"},
-  "earth": {"exercise_types": ["散步", "八段锦"], "effect": "健脾益胃"},
-  "metal": {"exercise_types": ["深呼吸", "普拉提"], "effect": "增强肺功能"},
-  "water": {"exercise_types": ["游泳", "气功"], "effect": "滋养肾气"}
+  "wood": {
+    "exercise_types": ["伸展运动", "太极", "气功", "瑜伽", "舒展体操"],
+    "effect": "舒展筋络，疏肝理气，有利于肝胆系统健康",
+    "frequency": "每周3-4次，每次30-45分钟",
+    "suitable_time": "清晨5-7点",
+    "caution": "避免过度用力，动作要缓慢均匀"
+  },
+  "fire": {
+    "exercise_types": ["有氧运动", "慢跑", "游泳", "骑行", "舞蹈"],
+    "effect": "促进血液循环，调节心肺功能，有利于心血管系统健康",
+    "frequency": "每周4-5次，每次20-30分钟",
+    "suitable_time": "上午10-12点",
+    "caution": "避免过度剧烈运动，注意心率监控"
+  },
+  "earth": {
+    "exercise_types": ["健走", "徒步旅行", "园艺", "轻度力量训练", "平衡训练"],
+    "effect": "增强肌肉力量，促进消化吸收，有利于脾胃系统健康",
+    "frequency": "每天45-60分钟",
+    "suitable_time": "饭后1-2小时",
+    "caution": "运动强度适中，避免空腹或过饱运动"
+  },
+  "metal": {
+    "exercise_types": ["呼吸训练", "胸部扩展运动", "冥想", "散步", "深呼吸"],
+    "effect": "增强肺活量，调节呼吸系统，有利于肺和大肠系统健康",
+    "frequency": "每天3-4次，每次15-20分钟",
+    "suitable_time": "傍晚5-7点",
+    "caution": "注意保暖，避免在空气污染环境中运动"
+  },
+  "water": {
+    "exercise_types": ["力量训练", "举重", "俯卧撑", "深蹲", "核心力量训练"],
+    "effect": "增强骨密度，强健肾脏功能，有利于肾和膀胱系统健康",
+    "frequency": "每周2-3次，每次40-60分钟",
+    "suitable_time": "夜晚8-10点",
+    "caution": "注意动作正确性，保护关节，避免过重负荷"
+  }
 }
