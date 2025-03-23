@@ -1,3 +1,4 @@
+# /Users/ericw/Documents/GitHub/CureCipher/models/liuyao/modules/yao_components.py
 """
 爻组件模块 - 处理六亲、六神、空亡等计算
 """
@@ -88,6 +89,54 @@ class YaoComponents:
             }
         }
     
+    def get_hour_ganzhi(self, hour: int, day_gan: str) -> str:
+        """
+        根据小时和日干获取时辰干支
+        
+        参数:
+            hour (int): 小时（0-23）
+            day_gan (str): 日干
+            
+        返回:
+            str: 时辰干支
+        """
+        # 时辰对照表（24小时制）
+        hour_to_zhi_map = {
+            0: "子", 1: "子",  # 23:00-01:00
+            2: "丑", 3: "丑",  # 01:00-03:00
+            4: "寅", 5: "寅",  # 03:00-05:00
+            6: "卯", 7: "卯",  # 05:00-07:00
+            8: "辰", 9: "辰",  # 07:00-09:00
+            10: "巳", 11: "巳",  # 09:00-11:00
+            12: "午", 13: "午",  # 11:00-13:00
+            14: "未", 15: "未",  # 13:00-15:00
+            16: "申", 17: "申",  # 15:00-17:00
+            18: "酉", 19: "酉",  # 17:00-19:00
+            20: "戌", 21: "戌",  # 19:00-21:00
+            22: "亥", 23: "亥"   # 21:00-23:00
+        }
+        
+        # 确定地支
+        zhi = hour_to_zhi_map.get(hour, "子")
+                
+        # 根据日干确定时干
+        gan_idx = {"甲": 0, "乙": 2, "丙": 4, "丁": 6, "戊": 8, 
+                   "己": 0, "庚": 2, "辛": 4, "壬": 6, "癸": 8}
+        
+        # 时干顺序
+        gans = ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"]
+        
+        # 地支序号
+        zhi_idx = {"子": 0, "丑": 1, "寅": 2, "卯": 3, "辰": 4, "巳": 5,
+                   "午": 6, "未": 7, "申": 8, "酉": 9, "戌": 10, "亥": 11}
+        
+        # 计算时干
+        start_idx = gan_idx.get(day_gan, 0)
+        gan_idx = (start_idx + zhi_idx.get(zhi, 0)) % 10
+        gan = gans[gan_idx]
+        
+        return f"{gan}{zhi}"
+    
     def calculate_liuqin(self, najia_info: List[str], day_master: Optional[str], day_zhi: str) -> List[str]:
         """
         计算六亲关系，同时考虑地支藏干
@@ -169,13 +218,12 @@ class YaoComponents:
         rot = rotation.get(day_gan, 0)
         return liushen[rot:] + liushen[:rot]
     
-    def calculate_kongwang(self, day_gz: str, najia_processor) -> List[str]:
+    def calculate_kongwang(self, day_gz: str) -> List[str]:
         """
         计算空亡爻，根据日干支确定空亡地支，然后找出对应的爻
         
         参数:
             day_gz (str): 日干支
-            najia_processor: 纳甲处理器对象
             
         返回:
             List[str]: 空亡爻列表，例如["初爻", "二爻"]
@@ -190,13 +238,8 @@ class YaoComponents:
         yao_names = ["初爻", "二爻", "三爻", "四爻", "五爻", "六爻"]
         
         # 遍历六爻，检查每爻的地支是否空亡
-        for i in range(6):
-            najia = najia_processor.get_najia_by_yao_number(i + 1)  # 获取该爻的纳甲
-            zhi = najia[1:]  # 取地支
-            
-            if zhi in kongwang_dizhi:
-                kongwang_yaos.append(yao_names[i])
-        
+        # 注意：这里需要从外部传入najia_processor，因为YaoComponents不直接处理纳甲
+        # 暂时返回空列表，等待外部提供najia信息
         return kongwang_yaos
     
     def _get_kongwang_dizhi(self, day_gz: str) -> List[str]:

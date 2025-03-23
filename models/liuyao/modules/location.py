@@ -195,5 +195,76 @@ class LocationService:
             print(f"离线数据库查询异常: {e}")
             return None
 
+    def get_location_details(self, longitude: float, latitude: float) -> dict:
+        """
+        根据经纬度获取位置详情（城市、国家等）
+        
+        参数:
+            longitude (float): 经度
+            latitude (float): 纬度
+            
+        返回:
+            dict: 位置详情，包含城市、国家等信息
+        """
+        try:
+            # 尝试使用反向地理编码服务
+            headers = {
+                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36"
+            }
+            url = f"https://nominatim.openstreetmap.org/reverse?format=json&lat={latitude}&lon={longitude}&zoom=14"
+            
+            response = requests.get(url, headers=headers, timeout=5)
+            response.raise_for_status()
+            data = response.json()
+            
+            address = data.get("address", {})
+            
+            return {
+                "city": address.get("city", address.get("town", address.get("village", "未知城市"))),
+                "country": address.get("country", "未知国家"),
+                "state": address.get("state", address.get("province", "未知省份")),
+                "county": address.get("county", address.get("district", "未知区县")),
+                "postcode": address.get("postcode", ""),
+                "full_address": data.get("display_name", "")
+            }
+        except Exception as e:
+            print(f"获取位置详情失败: {e}")
+            
+            # 根据经纬度划分默认区域
+            if 30 < latitude < 50 and 100 < longitude < 130:
+                return {"city": "北京", "country": "中国", "state": "北京市", "county": "", "postcode": "", "full_address": ""}
+            elif 25 < latitude < 45 and -125 < longitude < -65:
+                return {"city": "San Francisco", "country": "United States", "state": "California", "county": "", "postcode": "", "full_address": ""}
+            else:
+                return {"city": "未知城市", "country": "未知国家", "state": "", "county": "", "postcode": "", "full_address": ""}
+    
+    def get_location_from_ip_db(self, ip: str) -> Tuple[float, float]:
+        """
+        从离线DB-IP数据库获取位置
+        
+        参数:
+            ip (str): IP地址
+            
+        返回:
+            Tuple[float, float]: 经度，纬度
+            
+        异常:
+            ValueError: 如果位置信息不可用或无效
+        """
+        if not self.dbip_reader:
+            raise ValueError("DB-IP数据库未加载")
+            
+        result = self.dbip_reader.get(ip)
+        if not result or "location" not in result:
+            raise ValueError(f"IP {ip} 在数据库中未找到位置信息")
+            
+        longitude = result["location"].get("longitude")
+        latitude = result["location"].get("latitude")
+        
+        if longitude is None or latitude is None:
+            raise ValueError(f"IP {ip} 的位置信息不完整")
+            
+        return longitude, latitude
+
 # 单例模式，导出一个实例
 location_service = LocationService()

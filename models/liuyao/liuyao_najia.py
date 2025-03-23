@@ -1,3 +1,4 @@
+# /Users/ericw/Documents/GitHub/CureCipher/models/liuyao/liuyao_najia.py
 """
 六爻纳甲计算模块
 使用纳甲计算六爻卦象，结合农历日期、八字和神煞信息分析健康问题
@@ -9,29 +10,16 @@
 4. 支持真太阳时计算，根据用户IP地址自动判断经纬度
 """
 
-import json
-import os
-import sys
 import datetime
 from pathlib import Path
-from typing import Dict, List, Tuple, Optional, Union
+import sys
+from typing import Dict, Optional, Tuple
 
 # 添加项目根目录到路径
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
-try:
-    # 尝试导入子模块
-    from models.liuyao.modules.location import location_service
-    from models.liuyao.modules.solar_time import solar_time_calculator
-    from models.liuyao.modules.yao_components import yao_components
-    from models.liuyao.modules.health_analyzer import health_analyzer
-    from models.liuyao.modules.gua_calculator import gua_calculator
-    from models.liuyao.modules.najia_analyzer import najia_analyzer
-except ImportError as e:
-    print(f"导入子模块失败: {e}")
-    print("请确认子模块文件存在并且路径正确")
-    # 如果子模块导入失败，这里可以提供一个简化的实现或者直接退出程序
-    sys.exit(1)
+# 只导入必要的模块
+from models.liuyao.modules.gua_calculator import gua_calculator
 
 # 导入八字计算器模块
 from models.bazi.calculator import get_element
@@ -65,31 +53,17 @@ class LiuYaoNaJia:
         返回:
             Dict: 包含六爻卦象的相关信息
         """
-        # 如果未提供经纬度，且IP可用，则通过IP获取位置
-        if (longitude is None or latitude is None) and ip is not None:
-            try:
-                longitude, latitude = location_service.get_location_from_ip(ip)
-            except Exception as e:
-                print(f"通过IP获取位置失败: {e}")
-                # 使用默认值
-                longitude = longitude or 116.4  # 默认北京经度
-                latitude = latitude or 39.9    # 默认北京纬度
-        elif longitude is None or latitude is None:
-            # 使用默认值
-            longitude = longitude or 116.4  # 默认北京经度
-            latitude = latitude or 39.9     # 默认北京纬度
-        
         # 调用卦象计算器计算卦象
         result = gua_calculator.calculate_gua(
             solar_date, time_hour, longitude, latitude,
-            day_master, yong_shen, use_true_solar_time
+            day_master, yong_shen, use_true_solar_time, ip
         )
         
         return result
     
     def get_location_from_ip(self, ip: Optional[str]=None) -> Tuple[float, float]:
         """
-        根据IP地址获取经纬度，委托给location_service
+        根据IP地址获取经纬度，委托给gua_calculator内部的location_service
         
         参数:
             ip (str, optional): 用户IP地址，默认None（自动获取）
@@ -97,12 +71,14 @@ class LiuYaoNaJia:
         返回:
             Tuple[float, float]: 经度（longitude），纬度（latitude）
         """
+        # 直接通过gua_calculator内部的location_service获取
+        from models.liuyao.modules.location import location_service
         return location_service.get_location_from_ip(ip)
     
     def calculate_true_solar_time(self, solar_date: datetime.date, time_hour: float, 
                                   longitude: float) -> float:
         """
-        计算真太阳时，委托给solar_time_calculator
+        计算真太阳时，委托给gua_calculator内部的solar_time_calculator
         
         参数:
             solar_date (datetime.date): 阳历日期
@@ -112,6 +88,7 @@ class LiuYaoNaJia:
         返回:
             float: 真太阳时（小时），包含小数部分
         """
+        from models.liuyao.modules.solar_time import solar_time_calculator
         return solar_time_calculator.calculate_true_solar_time(solar_date, time_hour, longitude)
     
     def format_result(self, result: Dict) -> str:
@@ -130,7 +107,6 @@ class LiuYaoNaJia:
 def get_bazi(birth_datetime, day_master=None, yong_shen=None):
     """
     从八字模块导入的函数，用于获取八字信息
-    这里简化处理，实际应该从models.bazi.calculator模块导入
     
     参数:
         birth_datetime (datetime.datetime): 出生日期时间
