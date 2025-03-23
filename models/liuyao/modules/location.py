@@ -21,13 +21,17 @@ class LocationService:
         """
         # 如果未提供路径，使用默认路径
         if dbip_path is None:
-            root_dir = Path(__file__).parent.parent.parent.parent
-            self.dbip_path = os.path.join(root_dir, "data", "dbip-city-lite-2025-03.mmdb")
+            # 默认指向固定的IP地理位置库文件
+            self.dbip_path = "/Users/ericw/Documents/GitHub/CureCipher/data/dbip-city-lite-2025-03.mmdb"
         else:
             self.dbip_path = dbip_path
         
         # 加载DB-IP Lite数据库
         self.dbip_reader = self._load_dbip_data()
+        
+        # 默认经纬度（中国北京）
+        self.default_lon = 116.4
+        self.default_lat = 39.9
     
     def _load_dbip_data(self):
         """
@@ -37,14 +41,17 @@ class LocationService:
             maxminddb.Reader: MMDB数据库读取器
         """
         try:
-            return maxminddb.open_database(self.dbip_path)
+            print(f"尝试加载IP地理位置库: {self.dbip_path}")
+            reader = maxminddb.open_database(self.dbip_path)
+            print("IP地理位置库加载成功")
+            return reader
         except Exception as e:
             print(f"加载DB-IP数据库失败: {e}")
             return None
     
     def get_location_from_ip(self, ip: Optional[str] = None) -> Tuple[float, float]:
         """
-        根据IP地址获取经纬度，优先在线API，失败则用离线DB-IP数据库
+        根据IP地址获取经纬度，优先使用离线DB-IP数据库，失败则尝试在线API
         
         参数:
             ip (str, optional): 用户IP地址，默认None（自动获取）
@@ -52,60 +59,132 @@ class LocationService:
         返回:
             Tuple[float, float]: 经度（longitude），纬度（latitude）
         """
+        # 如果未提供IP，先尝试使用默认IP
+        if ip is None:
+            # 使用一些中国的常见IP作为默认
+            default_ips = ["1.2.4.8", "114.114.114.114", "223.5.5.5", "220.181.38.148"]
+            
+            # 首先尝试通过离线库使用默认IP查询
+            for default_ip in default_ips:
+                location = self._query_offline_db(default_ip)
+                if location:
+                    print(f"使用默认IP {default_ip} 成功获取位置")
+                    return location
+            
+            # 离线查询失败，尝试在线获取IP
+            ip = self._get_public_ip()
+            
+            # 如果在线获取也失败，使用默认值
+            if ip is None:
+                print(f"无法获取IP，使用默认北京经纬度: {self.default_lon}, {self.default_lat}")
+                return self.default_lon, self.default_lat
+        
+        # 首先尝试使用离线数据库
+        location = self._query_offline_db(ip)
+        if location:
+            return location
+        
+        # 离线库查询失败，尝试在线API
+        location = self._query_online_api(ip)
+        if location:
+            return location
+        
+        # 所有方法均失败，使用默认值
+        print(f"所有定位方法均失败，使用默认北京经纬度: {self.default_lon}, {self.default_lat}")
+        return self.default_lon, self.default_lat
+    
+    def _get_public_ip(self) -> Optional[str]:
+        """
+        获取本机公网IP
+        
+        返回:
+            Optional[str]: IP地址，失败则返回None
+        """
         # 设置请求头，模拟浏览器
         headers = {
             "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36"
         }
-
-        # 如果未提供IP，获取本机公网IP
-        if ip is None:
+        
+        # 尝试多个IP获取服务
+        ip_apis = [
+            "https://api.ipify.org",
+            "https://ifconfig.me/ip",
+            "https://ipinfo.io/ip"
+        ]
+        
+        for api in ip_apis:
             try:
-                response = requests.get("https://api.ipify.org", headers=headers, timeout=5)
+                print(f"尝试通过 {api} 获取公网IP...")
+                response = requests.get(api, headers=headers, timeout=3)
                 response.raise_for_status()
-                ip = response.text
+                ip = response.text.strip()
+                print(f"成功获取公网IP: {ip}")
+                return ip
             except Exception as e:
-                print(f"获取公网IP失败: {e}，尝试备用API")
-                try:
-                    response = requests.get("https://ifconfig.me/ip", headers=headers, timeout=5)
-                    response.raise_for_status()
-                    ip = response.text
-                except Exception as e:
-                    print(f"备用API失败: {e}，使用默认北美经纬度")
-                    print("建议手动输入经纬度以提高真太阳时计算精度")
-                    return -100, 40
-
-        # 优先尝试在线API（ip-api.com）
-        max_retries = 3
-        for attempt in range(max_retries):
-            try:
-                response = requests.get(f"https://ip-api.com/json/{ip}", headers=headers, timeout=5)
-                response.raise_for_status()
-                data = response.json()
-                if data["status"] == "success":
-                    return data["lon"], data["lat"]
-                break
-            except Exception as e:
-                if attempt == max_retries - 1:
-                    print(f"在线API获取位置失败（尝试{max_retries}次）: {e}，尝试离线数据库")
-                else:
-                    print(f"在线API第{attempt+1}次尝试失败，等待1秒后重试...")
-                    time.sleep(1)  # 增加重试间隔
-                    continue
-
-        # 在线失败，尝试离线DB-IP数据库（MMDB格式）
-        if self.dbip_reader:
-            try:
-                result = self.dbip_reader.get(ip)
-                if result and "location" in result:
-                    return result["location"]["longitude"], result["location"]["latitude"]
-                print(f"IP {ip} 未在DB-IP数据库中找到，使用默认北美经纬度")
-            except Exception as e:
-                print(f"离线数据库查询失败: {e}，使用默认北美经纬度")
-        else:
-            print("离线数据库不可用，使用默认北美经纬度")
-
-        print("建议手动输入经纬度以提高真太阳时计算精度")
-        return -100, 40  # 默认北美经纬度
+                print(f"通过 {api} 获取IP失败: {e}")
+                continue
+        
+        print("所有获取IP的方法均失败")
+        return None
+    
+    def _query_offline_db(self, ip: str) -> Optional[Tuple[float, float]]:
+        """
+        使用离线数据库查询IP位置
+        
+        参数:
+            ip (str): IP地址
+            
+        返回:
+            Optional[Tuple[float, float]]: 经纬度，失败则返回None
+        """
+        if not self.dbip_reader:
+            print("离线数据库不可用")
+            return None
+        
+        try:
+            print(f"使用离线数据库查询IP: {ip}")
+            result = self.dbip_reader.get(ip)
+            if result and "location" in result:
+                longitude = result["location"]["longitude"]
+                latitude = result["location"]["latitude"]
+                print(f"离线数据库查询成功: 经度={longitude}, 纬度={latitude}")
+                return longitude, latitude
+            print(f"IP {ip} 未在离线数据库中找到位置信息")
+            return None
+        except Exception as e:
+            print(f"离线数据库查询异常: {e}")
+            return None
+    
+    def _query_online_api(self, ip: str) -> Optional[Tuple[float, float]]:
+        """
+        使用在线API查询IP位置
+        
+        参数:
+            ip (str): IP地址
+            
+        返回:
+            Optional[Tuple[float, float]]: 经纬度，失败则返回None
+        """
+        # 设置请求头，模拟浏览器
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36"
+        }
+        
+        try:
+            print(f"尝试使用在线API查询IP位置: {ip}")
+            response = requests.get(f"https://ip-api.com/json/{ip}", headers=headers, timeout=5)
+            response.raise_for_status()
+            data = response.json()
+            if data["status"] == "success":
+                longitude = data["lon"]
+                latitude = data["lat"]
+                print(f"在线API查询成功: 经度={longitude}, 纬度={latitude}")
+                return longitude, latitude
+            print(f"在线API查询失败: {data.get('message', '未知错误')}")
+            return None
+        except Exception as e:
+            print(f"在线API查询异常: {e}")
+            return None
 
 # 单例模式，导出一个实例
 location_service = LocationService()
