@@ -72,12 +72,12 @@ class LiuYaoNaJia:
             except Exception as e:
                 print(f"通过IP获取位置失败: {e}")
                 # 使用默认值
-                longitude = longitude or -100  # 默认北美经度
-                latitude = latitude or 40     # 默认北美纬度
+                longitude = longitude or 116.4  # 默认北京经度
+                latitude = latitude or 39.9    # 默认北京纬度
         elif longitude is None or latitude is None:
             # 使用默认值
-            longitude = longitude or -100  # 默认北美经度
-            latitude = latitude or 40      # 默认北美纬度
+            longitude = longitude or 116.4  # 默认北京经度
+            latitude = latitude or 39.9     # 默认北京纬度
         
         # 调用卦象计算器计算卦象
         result = gua_calculator.calculate_gua(
@@ -170,13 +170,13 @@ if __name__ == "__main__":
         (test_date_1, test_hour_1, day_master_1, yong_shen_1),
         (test_date_2, test_hour_2, day_master_2, yong_shen_2)
     ]:
-        # 提供固定经纬度，不使用真太阳时以简化测试
+        # 提供固定经纬度，使用真太阳时
         result = liu_yao.calculate_gua(
             test_date, test_hour, 
-            longitude=-100, latitude=40,
+            longitude=None, latitude=None,  # 让系统通过IP自动获取经纬度
             day_master=day_master, 
             yong_shen=yong_shen,
-            use_true_solar_time=False
+            use_true_solar_time=True  # 默认开启真太阳时
         )
         
         # 打印格式化结果
