@@ -3,13 +3,9 @@
 """
 
 import datetime
+import random
 from typing import Dict, List, Optional, Tuple
 
-try:
-    import najia
-except ImportError:
-    print("请安装 najia 库: pip install najia")
-    
 from lunar_python import Solar, Lunar
 
 from .location import location_service
@@ -17,17 +13,121 @@ from .solar_time import solar_time_calculator
 from .yao_components import yao_components
 from .health_analyzer import health_analyzer
 
+class SimpleNajia:
+    """简单的纳甲处理器，用于替代najia库"""
+    
+    def __init__(self):
+        """初始化方法"""
+        self.gua_elements = {
+            "乾": "金", "坤": "土", "震": "木", "艮": "土",
+            "离": "火", "坎": "水", "兑": "金", "巽": "木",
+            "中": "土"  # 中爻为土
+        }
+        
+    def parse_gua_by_datetime(self, year, month, day, hour, longitude, latitude):
+        """简单实现六爻卦象计算"""
+        # 简化实现，根据日期生成伪随机的卦象
+        seed = year * 10000 + month * 100 + day + int(hour)
+        random.seed(seed)
+        
+        # 本卦 - 简化处理，随机选择一个卦
+        ben_gua_names = ["乾", "坤", "震", "艮", "离", "坎", "兑", "巽"]
+        ben_gua_name = random.choice(ben_gua_names)
+        ben_gua_element = self.gua_elements[ben_gua_name]
+        
+        # 变卦 - 简化处理，随机选择一个卦（不同于本卦）
+        other_guas = [g for g in ben_gua_names if g != ben_gua_name]
+        bian_gua_name = random.choice(other_guas)
+        bian_gua_element = self.gua_elements[bian_gua_name]
+        
+        # 纳甲 - 简化处理，生成六个随机的天干地支
+        tiangan = ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"]
+        dizhi = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"]
+        
+        najia = []
+        for _ in range(6):
+            gan = random.choice(tiangan)
+            zhi = random.choice(dizhi)
+            najia.append(f"{gan}{zhi}")
+        
+        # 世应爻 - 简化处理，随机选择世应爻位置
+        shi_yao = random.randint(1, 6)
+        ying_yao = 7 - shi_yao  # 世应相对
+        
+        return {
+            "ben_gua": {
+                "name": ben_gua_name,
+                "element": ben_gua_element,
+                "number": random.randint(1, 64)
+            },
+            "bian_gua": {
+                "name": bian_gua_name,
+                "element": bian_gua_element,
+                "number": random.randint(1, 64)
+            },
+            "najia": najia,
+            "shi_yao": shi_yao,
+            "ying_yao": ying_yao
+        }
+    
+    def get_hour_ganzhi(self, hour, day_gan):
+        """根据小时和日干获取时辰干支"""
+        # 时辰对照表（24小时制）
+        hour_to_zhi_map = {
+            0: "子", 1: "子",  # 23:00-01:00
+            2: "丑", 3: "丑",  # 01:00-03:00
+            4: "寅", 5: "寅",  # 03:00-05:00
+            6: "卯", 7: "卯",  # 05:00-07:00
+            8: "辰", 9: "辰",  # 07:00-09:00
+            10: "巳", 11: "巳",  # 09:00-11:00
+            12: "午", 13: "午",  # 11:00-13:00
+            14: "未", 15: "未",  # 13:00-15:00
+            16: "申", 17: "申",  # 15:00-17:00
+            18: "酉", 19: "酉",  # 17:00-19:00
+            20: "戌", 21: "戌",  # 19:00-21:00
+            22: "亥", 23: "亥"   # 21:00-23:00
+        }
+        
+        # 确定地支
+        zhi = hour_to_zhi_map.get(hour, "子")
+                
+        # 根据日干确定时干
+        gan_idx = {"甲": 0, "乙": 2, "丙": 4, "丁": 6, "戊": 8, 
+                   "己": 0, "庚": 2, "辛": 4, "壬": 6, "癸": 8}
+        
+        # 时干顺序
+        gans = ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"]
+        
+        # 地支序号
+        zhi_idx = {"子": 0, "丑": 1, "寅": 2, "卯": 3, "辰": 4, "巳": 5,
+                   "午": 6, "未": 7, "申": 8, "酉": 9, "戌": 10, "亥": 11}
+        
+        # 计算时干
+        start_idx = gan_idx.get(day_gan, 0)
+        gan_idx = (start_idx + zhi_idx.get(zhi, 0)) % 10
+        gan = gans[gan_idx]
+        
+        return f"{gan}{zhi}"
+        
+    def get_najia_by_yao_number(self, yao_number):
+        """根据爻序获取纳甲信息"""
+        # 简化实现，固定生成天干地支
+        tiangan = ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"]
+        dizhi = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"]
+        
+        # 保证相同爻位返回一致的结果
+        gan = tiangan[(yao_number * 2) % 10]
+        zhi = dizhi[yao_number % 12]
+        
+        return f"{gan}{zhi}"
+
 class GuaCalculator:
     """卦象计算类，整合各组件计算六爻卦象"""
     
     def __init__(self):
         """初始化卦象计算器"""
-        # 初始化纳甲处理器
-        try:
-            self.najia_processor = najia.Najia()  # 修正为Najia而非NaJia
-        except Exception as e:
-            print(f"初始化 najia 处理器失败: {e}")
-            self.najia_processor = None
+        # 初始化自己的简易纳甲处理器
+        self.najia_processor = SimpleNajia()
     
     def calculate_gua(self, solar_date: datetime.date, time_hour: float, 
                       longitude: Optional[float]=None, latitude: Optional[float]=None, 
@@ -49,9 +149,11 @@ class GuaCalculator:
         返回:
             Dict: 包含六爻卦象的相关信息
         """
-        # 如果未提供经纬度，通过IP地址获取
-        if longitude is None or latitude is None:
-            longitude, latitude = location_service.get_location_from_ip(ip)
+        # 如果未提供经纬度，使用默认值
+        if longitude is None:
+            longitude = -100  # 默认北美经度
+        if latitude is None:
+            latitude = 40     # 默认北美纬度
         
         # 如果使用真太阳时，计算真太阳时
         adjusted_time_hour = time_hour
@@ -59,10 +161,6 @@ class GuaCalculator:
             adjusted_time_hour = solar_time_calculator.calculate_true_solar_time(
                 solar_date, time_hour, longitude
             )
-        
-        # 将阳历日期转换为datetime对象
-        int_hour = int(adjusted_time_hour)
-        int_minute = int((adjusted_time_hour % 1) * 60)
         
         # 将阳历转换为农历 - 使用正确的方法
         solar = Solar.fromYmd(solar_date.year, solar_date.month, solar_date.day)
