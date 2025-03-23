@@ -1,82 +1,81 @@
-# CureCipher 修复报告
+# 六爻纳甲计算项目改进报告
 
-## 修复内容概述
+## 改进内容
 
-针对CureCipher项目的问题，已完成以下修复工作：
+本次改进主要集中在六爻卦象信息的显示方面，使其更加专业和符合传统六爻排盘格式。具体改进内容如下：
 
-1. **模块导入错误修复**
-2. **位置数据加载错误修复**
-3. **五行分析失败问题修复**
+### 1. 卦宫显示优化
 
-## 详细修复内容
+- 修复了卦宫名称中的重复问题，如将"震宫宫"改为"震宫"
+- 在 `gua_display.py` 中添加了 `remove_duplicate_gong` 函数专门处理这一问题
 
-### 1. 模块导入错误修复
+### 2. 爻位图形格式美化
 
-#### 问题：
-在多个测试脚本中出现 `ModuleNotFoundError: No module named 'models'` 错误，导致部分测试无法正常运行。
+- 优化了六爻图像格式，参考 najia 库的显示效果
+- 改进了阳爻和阴爻的符号表示，使用更加直观的图形
+  - 阳爻：`▅▅▅▅▅▅▅▅` 或 `■■■■■■■■`
+  - 阴爻：`▅▅▅  ▅▅▅` 或 `■■■  ■■■`
 
-#### 修复措施：
-- 修改 `run_tests.py`，添加项目根目录到 Python 路径
-- 为各个测试子目录创建 `__init__.py` 文件，确保正确导入模块
-- 在主要测试脚本中添加显式的路径处理，确保无论从哪里执行都能正确导入
+### 3. 六亲、六神和纳甲信息显示
 
-#### 修改文件：
-- `/Users/ericw/Documents/GitHub/CureCipher/run_tests.py`
-- `/Users/ericw/Documents/GitHub/CureCipher/tests/conftest.py`
-- `/Users/ericw/Documents/GitHub/CureCipher/tests/unit/__init__.py`
-- `/Users/ericw/Documents/GitHub/CureCipher/tests/edge_cases/__init__.py`
-- `/Users/ericw/Documents/GitHub/CureCipher/tests/performance/__init__.py`
-- `/Users/ericw/Documents/GitHub/CureCipher/tests/validation/__init__.py`
-- `/Users/ericw/Documents/GitHub/CureCipher/tests/integration/__init__.py`
-- `/Users/ericw/Documents/GitHub/CureCipher/tests/unit/test_element_relations.py`
+- 在爻位图形中正确显示六亲、六神和纳甲信息
+- 优化了信息的排版和对齐方式
+- 在 najia 库风格的显示中，使用了更加清晰的格式排列这些信息
 
-### 2. 位置数据加载错误修复
+### 4. 动爻标识改进
 
-#### 问题：
-多次测试输出中显示 `获取默认位置时出错: Expecting value: line 1 column 1 (char 0)`，这与加载位置数据相关。
+- 改进了动爻标识，使用 `×→` 代替原来的 `X`
+- 确保动爻标识与爻符号之间的间距适当
 
-#### 修复措施：
-- 重写 `get_default_location()` 函数，使其更加健壮
-- 添加预设位置数据，确保即使API调用失败也能提供默认值
-- 添加本地配置文件支持，允许用户自定义位置数据
-- 提供更好的错误处理和容错机制
+### 5. 排盘格式整体优化
 
-#### 修改文件：
-- `/Users/ericw/Documents/GitHub/CureCipher/models/bazi/calculator.py`
+- 整体优化了排盘格式，使其更加符合传统六爻排盘方式
+- 添加了两种不同的排盘显示格式：
+  1. 原有的增强版格式
+  2. 符合 najia 库风格的新格式
 
-### 3. 五行分析失败问题修复
+### 6. 纳甲计算改进
 
-#### 问题：
-在 `test_specific.py` 中出现 `五行分析失败: ''` 错误，这是因为缺少必要的数据文件以及数据结构不完整。
+- 在 `AccurateNajia.py` 中改进了天干地支的计算方法
+- 更新了地支对应五行的映射关系
+- 优化了变卦纳甲的计算逻辑
 
-#### 修复措施：
-- 创建必要的数据文件：`five_elements_flavors.json`、`five_elements_exercises.json`、`diet_recipes.json`
-- 修改 `test_specific.py`，添加数据结构完整性检查和默认值处理
-- 完善错误处理，确保即使某部分分析失败，其他分析仍能继续执行
+## 修改的文件
 
-#### 创建/修改文件：
-- `/Users/ericw/Documents/GitHub/CureCipher/data/five_elements_flavors.json`
-- `/Users/ericw/Documents/GitHub/CureCipher/data/five_elements_exercises.json`
-- `/Users/ericw/Documents/GitHub/CureCipher/data/diet_recipes.json`
-- `/Users/ericw/Documents/GitHub/CureCipher/tests/bazi/test_specific.py`
+本次改进主要修改了以下文件：
 
-## 测试验证
+1. `/models/liuyao/modules/gua_display.py`
+   - 添加了 `remove_duplicate_gong` 函数
+   - 修改了 `generate_full_gua_display` 函数，优化排盘格式
+   - 新增 `generate_najia_style_display` 函数，提供 najia 库风格的显示
 
-所有修复都通过了以下验证：
-1. 确保代码语法正确
-2. 文件路径正确
-3. 提供合理的默认值和错误处理
-4. 修复了已知的错误输出
+2. `/models/liuyao/modules/gua_palace.py`
+   - 修改了 `identify_gua_palace_type` 方法，处理卦宫重复问题
+   - 更新了 `get_palace_diagram` 方法，修复卦宫名称问题
 
-## 后续建议
+3. `/models/liuyao/modules/AccurateNajia.py`
+   - 改进了 `_calculate_najia` 方法，优化天干地支的计算
+   - 更新了 `_calculate_bian_najia` 方法，改进变卦纳甲的计算逻辑
 
-尽管已经完成基本修复，但建议进一步进行以下工作：
+4. `/liuyao_najia.py`
+   - 更新了排盘显示部分，调用新的格式化显示函数
+   - 添加了参考样式的排盘格式显示
 
-1. **完善测试覆盖**：将修复后的测试脚本整合到主测试套件中
-2. **增强错误处理**：增加更多的日志输出和错误诊断信息
-3. **完善文档**：更新README和文档，说明如何正确设置开发环境
-4. **添加集成测试**：创建端到端测试，验证完整功能流程
+## 改进效果
 
-## 结论
+改进后的排盘格式更加清晰、美观，符合传统六爻排盘习惯，具体表现为：
 
-通过以上修复，CureCipher项目的八字模块现在应该能够正常运行，测试脚本能够正确导入模块并执行计算和分析。位置数据加载更加可靠，五行分析功能也能够正常工作。这些修复为后续功能开发和完善打下了坚实基础。
+1. 卦宫和卦名信息更加规范
+2. 爻位图形显示更加直观
+3. 六亲、六神、纳甲信息布局合理
+4. 动爻、世爻、应爻标识更加清晰
+5. 整体排版更加专业
+
+## 后续可能的改进方向
+
+1. 进一步优化纳甲计算的准确性
+2. 添加更多排盘格式选项
+3. 支持更多的排盘信息显示，如六爻互卦、八宫详细信息等
+4. 进一步完善变卦的显示
+5. 优化结果导出功能，支持更多格式输出
+

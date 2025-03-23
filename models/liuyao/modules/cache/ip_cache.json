@@ -1,0 +1,13 @@
+{
+  "external_ip": "99.9.58.203",
+  "external_ip_updated": 1742757274.2128,
+  "location_99.9.58.203": {
+    "city": "Santa Ana",
+    "country": "United States",
+    "region": "California",
+    "longitude": -117.9071,
+    "latitude": 33.7499,
+    "timezone": "America/Los_Angeles"
+  },
+  "location_99.9.58.203_updated": 1742732831.9202921
+}

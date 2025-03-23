@@ -14,7 +14,8 @@ from .yao_components import yao_components
 from .AccurateNajia import accurate_najia
 from .health_analyzer import health_analyzer
 from .shensha_data import get_shensha_by_zhi, get_liushen
-from .gua_display import generate_full_gua_display, gua_to_image_text
+from .gua_display import generate_full_gua_display, gua_to_image_text, generate_enhanced_gua_display, format_for_print
+from .gua_palace import gua_palace
 
 class GuaCalculator:
     """卦象计算类，整合各组件计算六爻卦象"""
@@ -178,11 +179,39 @@ class GuaCalculator:
         # 分析健康问题
         result["health_analysis"] = health_analyzer.analyze_health(result, day_master, yong_shen)
         
+        # 使用卦宫处理模块识别卦宫和卦型
+        ben_palace, ben_type, ben_full_info = gua_palace.identify_gua_palace_type(ben_yao_array)
+        bian_palace, bian_type, bian_full_info = gua_palace.identify_gua_palace_type(bian_yao_array)
+        
+        # 添加卦宫和卦型信息
+        result["ben_gua"]["palace"] = ben_palace
+        result["ben_gua"]["gua_type"] = ben_type
+        if ben_full_info:
+            result["ben_gua"]["description"] = ben_full_info.get("description", "")
+            result["ben_gua"]["xiang"] = ben_full_info.get("xiang", "")
+        
+        result["bian_gua"]["palace"] = bian_palace
+        result["bian_gua"]["gua_type"] = bian_type
+        if bian_full_info:
+            result["bian_gua"]["description"] = bian_full_info.get("description", "")
+            result["bian_gua"]["xiang"] = bian_full_info.get("xiang", "")
+        
         # 生成卦象ASCII图
         result["gua_ascii"] = generate_full_gua_display(result)
         
         # 生成图像文本
-        result["gua_image_text"] = gua_to_image_text(ben_yao_array, bian_yao_array, dong_yao_pos, ben_gua_name, bian_gua_name)
+        result["gua_image_text"] = gua_to_image_text(
+            ben_yao_array, bian_yao_array, dong_yao_pos, 
+            ben_gua_name, bian_gua_name,
+            ben_palace, bian_palace,
+            shi_yao, ying_yao
+        )
+        
+        # 生成增强版卦象显示
+        result["enhanced_display"] = generate_enhanced_gua_display(result)
+        
+        # 生成适合打印的格式
+        result["print_format"] = format_for_print(result)
         
         return result
     
