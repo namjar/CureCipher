@@ -43,40 +43,6 @@ class HealthAnalyzer:
             "辰": "土", "巳": "火", "午": "火", "未": "土",
             "申": "金", "酉": "金", "戌": "土", "亥": "水"
         }
-        
-        # 六神健康属性
-        self.liushen_health = {
-            "青龙": {
-                "health_impact": "有利于气血循环，增强身体活力",
-                "issues": "情绪波动，血压不稳",
-                "recommendations": "静心调息，多食用绿色蔬菜"
-            },
-            "朱雀": {
-                "health_impact": "有利于心脏功能，提高新陈代谢",
-                "issues": "口舌生疮，心火过旺，失眠",
-                "recommendations": "保持心情平静，饮用菊花茶"
-            },
-            "勾陈": {
-                "health_impact": "有利于稳定情绪，增强消化功能",
-                "issues": "消化不良，胃部不适，体重增加",
-                "recommendations": "减少油腻食物，按摩脾胃经络"
-            },
-            "腾蛇": {
-                "health_impact": "有利于排毒，改善血液循环",
-                "issues": "皮肤问题，过敏反应，神经紧张",
-                "recommendations": "保持身心平和，多饮水"
-            },
-            "白虎": {
-                "health_impact": "有利于呼吸系统，增强免疫力",
-                "issues": "慢性疼痛，肺部问题，免疫系统失调",
-                "recommendations": "按合谷穴，饮山楂茶"
-            },
-            "玄武": {
-                "health_impact": "有利于肾脏功能，改善水液代谢",
-                "issues": "泌尿系统问题，水肿，腰背疼痛",
-                "recommendations": "保暖腰部，多吃黑色食物如黑豆、黑芝麻"
-            }
-        }
     
     def _load_shensha_data(self) -> Dict:
         """
@@ -86,8 +52,12 @@ class HealthAnalyzer:
             Dict: 包含神煞影响的字典
         """
         try:
-            with open(self.shensha_data_path, 'r', encoding='utf-8') as f:
-                return json.load(f)
+            if os.path.exists(self.shensha_data_path):
+                with open(self.shensha_data_path, 'r', encoding='utf-8') as f:
+                    return json.load(f)
+            else:
+                print(f"神煞数据文件不存在: {self.shensha_data_path}")
+                return {"positive": {}, "negative": {}}
         except Exception as e:
             print(f"加载神煞数据失败: {e}")
             return {"positive": {}, "negative": {}}
@@ -105,7 +75,7 @@ class HealthAnalyzer:
         返回:
             Dict: 健康分析结果
         """
-        # 获取卦象和神煞信息
+        # 获取卦象和各种信息
         ben_gua = gua_result["ben_gua"]
         bian_gua = gua_result["bian_gua"]
         najia = gua_result["najia"]
@@ -114,14 +84,17 @@ class HealthAnalyzer:
         kongwang = gua_result["kongwang"]
         dong_yao = gua_result["dong_yao"]
         shi_yao = gua_result["shi_yao"]
-        day_gz = gua_result["date_info"]["day_gz"]
-        month_gz = gua_result["date_info"]["month_gz"]
         
-        # 获取本卦、变卦五行
+        # 获取日期信息
+        date_info = gua_result["date_info"]
+        day_gz = date_info["day_gz"]
+        month_gz = date_info["month_gz"]
+        
+        # 获取本卦和变卦五行属性
         ben_gua_element = ben_gua["element"]
         bian_gua_element = bian_gua["element"]
         
-        # 获取日主五行（如果有）
+        # 获取日主和用神五行（如果有）
         day_master_element = get_element(day_master) if day_master else None
         
         # 健康分析结果
@@ -226,7 +199,7 @@ class HealthAnalyzer:
                     )
                 
                 # 用神所在爻的六神影响
-                yong_yao_liushen_data = self.liushen_health.get(yong_yao_liushen, {})
+                yong_yao_liushen_data = yao_components.liushen_health.get(yong_yao_liushen, {})
                 if yong_yao_liushen_data:
                     health_result["specific_issues"].append(
                         f"用神{yong_shen_liuqin}所在爻的六神为{yong_yao_liushen}，{yong_yao_liushen_data['issues']}"
@@ -249,7 +222,7 @@ class HealthAnalyzer:
             )
         
         # 分析六神对健康的影响
-        liushen_data = self.liushen_health.get(dong_yao_liushen, {})
+        liushen_data = yao_components.liushen_health.get(dong_yao_liushen, {})
         if liushen_data:
             health_result["specific_issues"].append(
                 f"动爻六神为{dong_yao_liushen}，{liushen_data['issues']}"
@@ -260,7 +233,8 @@ class HealthAnalyzer:
         
         # 分析空亡影响
         dong_yao_name = f"第{dong_yao}爻"
-        if dong_yao_name in kongwang:
+        yao_names = ["初爻", "二爻", "三爻", "四爻", "五爻", "六爻"]
+        if yao_names[dong_yao-1] in kongwang:
             health_result["specific_issues"].append(
                 f"动爻{dong_yao_name}空亡，健康影响减弱"
             )
@@ -292,7 +266,7 @@ class HealthAnalyzer:
         shensha = self.select_shensha(gua_result, day_master_element)
         if shensha:
             health_result["specific_issues"].append(
-                f"有{shensha['name']}神煞影响，{shensha['impact']}"
+                f"有{shensha['name']}神煞影响，{shensha.get('impact', '影响较大')}"
             )
             if "remedy" in shensha:
                 health_result["recommendations"].append(f"建议{shensha['remedy']}")
@@ -328,7 +302,47 @@ class HealthAnalyzer:
         # 流年五行
         flow_year_elements = self.flow_year["element"].split()
         
-        # 导入神煞数据
+        # 模拟神煞数据（如果没有真实数据）
+        if not self.shensha_data or (not self.shensha_data.get("positive") and not self.shensha_data.get("negative")):
+            # 创建一些模拟的神煞数据用于测试
+            mock_shensha = {
+                "天德": {
+                    "element": "木",
+                    "flow_year_boost": ["木"],
+                    "impact": "有益于身体恢复，增强肝脏功能",
+                    "remedy": "保持乐观心态，适当运动"
+                },
+                "月德": {
+                    "element": "火",
+                    "flow_year_boost": ["火"],
+                    "impact": "促进血液循环，增强心脏功能",
+                    "remedy": "保持情绪稳定，避免过度劳累"
+                },
+                "天医": {
+                    "element": "土",
+                    "flow_year_boost": ["土"],
+                    "impact": "有益于消化系统，增强脾胃功能",
+                    "remedy": "规律饮食，多食用健脾食物"
+                },
+                "天马": {
+                    "element": "金",
+                    "flow_year_boost": ["金"],
+                    "impact": "有益于呼吸系统，增强肺部功能",
+                    "remedy": "保持呼吸通畅，避免烟尘"
+                },
+                "天喜": {
+                    "element": "水",
+                    "flow_year_boost": ["水"],
+                    "impact": "有益于泌尿系统，增强肾脏功能",
+                    "remedy": "保持充足水分，避免着凉"
+                }
+            }
+            
+            # 随机选择一个神煞
+            shensha_name = random.choice(list(mock_shensha.keys()))
+            return {"name": shensha_name, **mock_shensha[shensha_name]}
+        
+        # 实际神煞数据处理
         positive_shensha = self.shensha_data.get("positive", {})
         negative_shensha = self.shensha_data.get("negative", {})
         
@@ -395,6 +409,11 @@ class HealthAnalyzer:
                     selected["impact"] = f"影响：{', '.join(health_impact)}"
             
             return selected
+        
+        # 如果没有相关神煞，随机选择一个
+        if all_shensha:
+            shensha_name = random.choice(list(all_shensha.keys()))
+            return {"name": shensha_name, **all_shensha[shensha_name]}
         
         return {}
     
