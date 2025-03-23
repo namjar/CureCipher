@@ -24,7 +24,7 @@ class GuaCalculator:
         """初始化卦象计算器"""
         # 初始化纳甲处理器
         try:
-            self.najia_processor = najia.NaJia()
+            self.najia_processor = najia.Najia()  # 修正为Najia而非NaJia
         except Exception as e:
             print(f"初始化 najia 处理器失败: {e}")
             self.najia_processor = None
@@ -60,16 +60,12 @@ class GuaCalculator:
                 solar_date, time_hour, longitude
             )
         
-        # 将阳历日期和时间组合成 datetime.datetime 对象
+        # 将阳历日期转换为datetime对象
         int_hour = int(adjusted_time_hour)
         int_minute = int((adjusted_time_hour % 1) * 60)
-        solar_datetime = datetime.datetime(
-            solar_date.year, solar_date.month, solar_date.day,
-            int_hour, int_minute
-        )
         
-        # 将阳历转换为农历
-        solar = Solar.fromDate(solar_datetime)
+        # 将阳历转换为农历 - 使用正确的方法
+        solar = Solar.fromYmd(solar_date.year, solar_date.month, solar_date.day)
         lunar = solar.getLunar()
         
         # 获取四柱干支
