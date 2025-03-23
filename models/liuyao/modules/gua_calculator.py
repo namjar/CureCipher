@@ -309,9 +309,9 @@ class GuaCalculator:
         output = []
         
         # 日期和时间信息
-        output.append(f"测算日期: {result['date_info']['solar_date']} {result['date_info']['time_hour']}时")
-        if result['date_info']['use_true_solar_time']:
-            output.append(f"真太阳时: {result['date_info']['adjusted_time_hour']:.2f}时")
+        output.append(f"测算日期: {result['date_info']['solar_date']}")
+        output.append(f"当地时间: {result['date_info']['time_hour']:.2f}时")
+        output.append(f"真太阳时: {result['date_info']['adjusted_time_hour']:.2f}时") if result['date_info']['use_true_solar_time'] else output.append("真太阳时: 未开启")
         output.append(f"农历: {result['date_info']['lunar_date']}")
         output.append(f"四柱: {result['date_info']['year_gz']} {result['date_info']['month_gz']} {result['date_info']['day_gz']} {result['date_info']['hour_gz']}")
         
