@@ -1,4 +1,5 @@
-"""
+from .shensha_data import get_shensha_by_zhi, get_liushen
+from .gua_display import generate_full_gua_display, gua_to_image_text"""
 卦象计算模块 - 计算六爻卦象并整合各种信息
 """
 
@@ -35,9 +36,40 @@ class SimpleNajia:
         ben_gua_name = random.choice(ben_gua_names)
         ben_gua_element = self.gua_elements[ben_gua_name]
         
-        # 变卦 - 简化处理，随机选择一个卦（不同于本卦）
-        other_guas = [g for g in ben_gua_names if g != ben_gua_name]
-        bian_gua_name = random.choice(other_guas)
+        # 变卦 - 根据动爻位置计算变卦
+        # 首先生成本卦的爻位阵列（1为阳爻，0为阴爻）
+        gua_yao_map = {
+            "乾": [1, 1, 1, 1, 1, 1], "坤": [0, 0, 0, 0, 0, 0], 
+            "震": [1, 0, 0, 0, 0, 0], "艾": [0, 0, 0, 0, 0, 1],
+            "离": [1, 0, 1, 0, 1, 0], "坎": [0, 1, 0, 1, 0, 1],
+            "兑": [1, 0, 0, 0, 1, 0], "巳": [0, 1, 0, 0, 0, 1]
+        }
+        
+        # 卦名与常用全集
+        ben_gua_names = ["乾", "坤", "震", "艾", "离", "坎", "兑", "巳"]
+        
+        # 生成随机的动爻位置（简化处理）
+        dong_yao_position = random.randint(1, 6)
+        
+        # 复制本卦爻位阵列
+        ben_yao = gua_yao_map.get(ben_gua_name, [1, 1, 1, 0, 0, 0])  # 默认为乾坤卦
+        bian_yao = ben_yao.copy()
+        
+        # 变动第动爻位置的爻（阳变阴，阴变阳）
+        bian_yao[dong_yao_position - 1] = 1 - bian_yao[dong_yao_position - 1]
+        
+        # 根据变化后的爻位确定变卦
+        bian_gua_name = None
+        for name, yao_pattern in gua_yao_map.items():
+            if bian_yao == yao_pattern:
+                bian_gua_name = name
+                break
+        
+        # 如果未找到匹配的卦，随机选择一个（备用方案）
+        if not bian_gua_name:
+            other_guas = [g for g in ben_gua_names if g != ben_gua_name]
+            bian_gua_name = random.choice(other_guas)
+            
         bian_gua_element = self.gua_elements[bian_gua_name]
         
         # 纳甲 - 简化处理，生成六个随机的天干地支
@@ -54,20 +86,64 @@ class SimpleNajia:
         shi_yao = random.randint(1, 6)
         ying_yao = 7 - shi_yao  # 世应相对
         
+        # 生成变卦的纳甲信息（简化处理）
+        bian_najia = []
+        for i in range(6):
+            # 如果是动爻，则变化地支（阳变阴，阴变阳）
+            if i + 1 == dong_yao_position:
+                gan, zhi = najia[i][0], najia[i][1:]
+                # 地支对应关系（阳阴互变）
+                zhi_opposite = {
+                    "子": "午", "午": "子",
+                    "丑": "未", "未": "丑",
+                    "寅": "申", "申": "寅",
+                    "卯": "酉", "酉": "卯",
+                    "辰": "戌", "戌": "辰",
+                    "巳": "亥", "亥": "巳"
+                }
+                new_zhi = zhi_opposite.get(zhi, zhi)
+                bian_najia.append(f"{gan}{new_zhi}")
+            else:
+                # 非动爻保持不变
+                bian_najia.append(najia[i])
+                
+        # 生成神煜信息
+        shenshas = {
+            # 根据年柱确定的神煜
+            "year": ["岁破", "切能", "天器"],
+            # 根据月柱确定的神煜
+            "month": ["月建", "月破", "月煜"],
+            # 根据日柱确定的神煜
+            "day": ["日建", "日破", "日上免", "日下免"],
+            # 根据时柱确定的神煜
+            "hour": ["时建", "时破", "黄幕"]
+        }
+        
+        # 随机生成一些神煜位置（简化模拟）
+        for key in shenshas:
+            for i, shensha in enumerate(shenshas[key]):
+                # 随机指定神煜对应的爻位
+                shenshas[key][i] = (shensha, random.randint(1, 6))
+        
         return {
             "ben_gua": {
                 "name": ben_gua_name,
                 "element": ben_gua_element,
-                "number": random.randint(1, 64)
+                "number": random.randint(1, 64),
+                "yao": ben_yao  # 本卦爻位信息（1阳0阴）
             },
             "bian_gua": {
                 "name": bian_gua_name,
                 "element": bian_gua_element,
-                "number": random.randint(1, 64)
+                "number": random.randint(1, 64),
+                "yao": bian_yao  # 变卦爻位信息
             },
-            "najia": najia,
+            "najia": najia,           # 本卦纳甲
+            "bian_najia": bian_najia, # 变卦纳甲
             "shi_yao": shi_yao,
-            "ying_yao": ying_yao
+            "ying_yao": ying_yao,
+            "dong_yao": dong_yao_position,  # 动爻位置
+            "shenshas": shenshas       # 神煜信息
         }
     
     def get_hour_ganzhi(self, hour, day_gan):
@@ -212,12 +288,56 @@ class GuaCalculator:
         shi_yao = gua_data['shi_yao']
         ying_yao = gua_data['ying_yao']
         
+        # 从接收到的卦象数据中提取动爻位置
+        dong_yao_pos = gua_data.get('dong_yao', dong_yao)
+        
+        # 提取变卦纳甲信息
+        bian_najia_info = gua_data.get('bian_najia', [])
+        
+        # 如果空缺，生成变卦纳甲（基于本卦纳甲和动爻位置）
+        if not bian_najia_info:
+            bian_najia_info = najia_info.copy()
+            if 1 <= dong_yao_pos <= 6 and len(najia_info) >= dong_yao_pos:
+                gan, zhi = najia_info[dong_yao_pos-1][0], najia_info[dong_yao_pos-1][1:]
+                # 地支对应关系（阳阴互变）
+                zhi_opposite = {
+                    "子": "午", "午": "子",
+                    "丑": "未", "未": "丑",
+                    "寅": "申", "申": "寅",
+                    "卯": "酉", "酉": "卯",
+                    "辰": "戌", "戌": "辰",
+                    "巳": "亥", "亥": "巳"
+                }
+                new_zhi = zhi_opposite.get(zhi, zhi)
+                bian_najia_info[dong_yao_pos-1] = f"{gan}{new_zhi}"
+        
+        # 计算变卦的六亲关系
+        bian_liuqin = yao_components.calculate_liuqin(bian_najia_info, day_master, day_zhi) if bian_najia_info else []
+        
+        # 提取神煜信息
+        shenshas_info = gua_data.get('shenshas', {})
+        
+        # 如果没有神煜信息，生成默认的神煜数据
+        if not shenshas_info:
+            # 基于四柱地支生成神煜位置
+            shenshas_info = {
+                "year": self._generate_year_shenshas(year_zhi),
+                "month": self._generate_month_shenshas(month_zhi),
+                "day": self._generate_day_shenshas(day_zhi),
+                "hour": self._generate_hour_shenshas(hour_zhi)
+            }
+        
+        # 提取本卦和变卦的爻位阵列
+        ben_yao_array = gua_data.get('ben_gua', {}).get('yao', [])
+        bian_yao_array = gua_data.get('bian_gua', {}).get('yao', [])
+        
         # 整合结果
         result = {
             "ben_gua": {
                 "name": ben_gua_name,
                 "element": ben_gua_element,
-                "number": ben_gua.get('number', 0)
+                "number": ben_gua.get('number', 0),
+                "yao": ben_yao_array
             },
             "najia": najia_info,
             "liuqin": liuqin,
@@ -225,12 +345,16 @@ class GuaCalculator:
             "kongwang": kongwang,
             "shi_yao": shi_yao,
             "ying_yao": ying_yao,
-            "dong_yao": dong_yao,
+            "dong_yao": dong_yao_pos,
             "bian_gua": {
                 "name": bian_gua['name'],
                 "element": bian_gua['element'],
-                "number": bian_gua.get('number', 0)
+                "number": bian_gua.get('number', 0),
+                "yao": bian_yao_array
             },
+            "bian_najia": bian_najia_info,
+            "bian_liuqin": bian_liuqin,
+            "shenshas": shenshas_info,
             "date_info": {
                 "solar_date": solar_date.strftime("%Y-%m-%d"),
                 "lunar_date": f"{lunar.getYearInChinese()}年{lunar.getMonthInChinese()}月{lunar.getDayInChinese()}",
@@ -295,6 +419,99 @@ class GuaCalculator:
         }
         
         return element_map.get(gan)
+    
+    def _generate_year_shenshas(self, year_zhi: str) -> List[Tuple[str, int]]:
+        """
+        根据年柱地支生成年柱神煜
+        
+        参数:
+            year_zhi (str): 年柱地支
+            
+        返回:
+            List[Tuple[str, int]]: 神煜信息列表，每项为(神煜名, 爻位)
+        """
+        # 基于地支确定年柱神煜位置
+        seed = sum(ord(c) for c in year_zhi) if year_zhi else 0
+        random.seed(seed)
+        
+        # 年柱神煜
+        shenshas = [
+            ("岁破", (seed % 6) + 1),
+            ("天财", ((seed + 2) % 6) + 1),
+            ("天年", ((seed + 4) % 6) + 1)
+        ]
+        
+        return shenshas
+    
+    def _generate_month_shenshas(self, month_zhi: str) -> List[Tuple[str, int]]:
+        """
+        根据月柱地支生成月柱神煜
+        
+        参数:
+            month_zhi (str): 月柱地支
+            
+        返回:
+            List[Tuple[str, int]]: 神煜信息列表，每项为(神煜名, 爻位)
+        """
+        # 基于地支确定月柱神煜位置
+        seed = sum(ord(c) for c in month_zhi) if month_zhi else 0
+        random.seed(seed + 1)
+        
+        # 月柱神煜
+        shenshas = [
+            ("月建", (seed % 6) + 1),
+            ("月破", ((seed + 3) % 6) + 1),
+            ("月归", ((seed + 5) % 6) + 1)
+        ]
+        
+        return shenshas
+    
+    def _generate_day_shenshas(self, day_zhi: str) -> List[Tuple[str, int]]:
+        """
+        根据日柱地支生成日柱神煜
+        
+        参数:
+            day_zhi (str): 日柱地支
+            
+        返回:
+            List[Tuple[str, int]]: 神煜信息列表，每项为(神煜名, 爻位)
+        """
+        # 基于地支确定日柱神煜位置
+        seed = sum(ord(c) for c in day_zhi) if day_zhi else 0
+        random.seed(seed + 2)
+        
+        # 日柱神煜
+        shenshas = [
+            ("日建", (seed % 6) + 1),
+            ("日破", ((seed + 1) % 6) + 1),
+            ("日合", ((seed + 3) % 6) + 1),
+            ("日差", ((seed + 5) % 6) + 1)
+        ]
+        
+        return shenshas
+    
+    def _generate_hour_shenshas(self, hour_zhi: str) -> List[Tuple[str, int]]:
+        """
+        根据时柱地支生成时柱神煜
+        
+        参数:
+            hour_zhi (str): 时柱地支
+            
+        返回:
+            List[Tuple[str, int]]: 神煜信息列表，每项为(神煜名, 爻位)
+        """
+        # 基于地支确定时柱神煜位置
+        seed = sum(ord(c) for c in hour_zhi) if hour_zhi else 0
+        random.seed(seed + 3)
+        
+        # 时柱神煜
+        shenshas = [
+            ("时建", (seed % 6) + 1),
+            ("时破", ((seed + 2) % 6) + 1),
+            ("黄幕", ((seed + 4) % 6) + 1)
+        ]
+        
+        return shenshas
     
     def format_gua_result(self, result: Dict) -> str:
         """
@@ -369,6 +586,58 @@ class GuaCalculator:
         # 变卦
         output.append(f"变卦: {result['bian_gua']['name']} ({result['bian_gua']['element']})")
         
+        # 变卦纳甲信息
+        if 'bian_najia' in result and result['bian_najia']:
+            bian_najia_str = ", ".join([
+                f"初爻{result['bian_najia'][0]}" if i == 0 else 
+                f"六爻{result['bian_najia'][-1]}" if i == 5 else 
+                f"第{i+1}爻{result['bian_najia'][i]}" 
+                for i in range(len(result['bian_najia']))
+            ])
+            output.append(f"变卦纳甲: {bian_najia_str}")
+        
+        # 变卦六亲信息
+        if 'bian_liuqin' in result and result['bian_liuqin']:
+            bian_liuqin_str = ", ".join([
+                f"初爻{result['bian_liuqin'][0]}" if i == 0 else 
+                f"六爻{result['bian_liuqin'][-1]}" if i == 5 else 
+                f"第{i+1}爻{result['bian_liuqin'][i]}" 
+                for i in range(len(result['bian_liuqin']))
+            ])
+            output.append(f"变卦六亲: {bian_liuqin_str}")
+        
+        # 神煜信息
+        if 'shenshas' in result and result['shenshas']:
+            output.append("")
+            output.append("神煜信息:")
+            
+            # 年柱神煜
+            if 'year' in result['shenshas'] and result['shenshas']['year']:
+                year_shenshas = [
+                    f"{name}(第{pos}爻)" for name, pos in result['shenshas']['year']
+                ]
+                output.append(f"  年柱神煜: {', '.join(year_shenshas)}")
+            
+            # 月柱神煜
+            if 'month' in result['shenshas'] and result['shenshas']['month']:
+                month_shenshas = [
+                    f"{name}(第{pos}爻)" for name, pos in result['shenshas']['month']
+                ]
+                output.append(f"  月柱神煜: {', '.join(month_shenshas)}")
+            
+            # 日柱神煜
+            if 'day' in result['shenshas'] and result['shenshas']['day']:
+                day_shenshas = [
+                    f"{name}(第{pos}爻)" for name, pos in result['shenshas']['day']
+                ]
+                output.append(f"  日柱神煜: {', '.join(day_shenshas)}")
+            
+            # 时柱神煜
+            if 'hour' in result['shenshas'] and result['shenshas']['hour']:
+                hour_shenshas = [
+                    f"{name}(第{pos}爻)" for name, pos in result['shenshas']['hour']
+                ]
+                output.append(f"  时柱神煜: {', '.join(hour_shenshas)}")
         # 健康分析
         output.append("")
         output.append(f"健康影响: {result['health_analysis']['overall']}")
