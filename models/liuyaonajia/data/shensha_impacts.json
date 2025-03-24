@@ -1,0 +1,33 @@
+{
+  "positive": {
+    "天医": {
+      "description": "天医主健康与治愈，能改善身体状况。",
+      "impact": "健康长寿，治愈疾病",
+      "element": "水",
+      "health_aspects": {
+        "day_master_strong": ["肾气充足", "糖尿病改善"],
+        "day_master_weak": ["肾虚缓解"],
+        "day_master_neutral": ["体质增强"]
+      },
+      "element_affinity": ["水", "金"],
+      "flow_year_boost": ["水"],
+      "flow_year_suppress": ["土"]
+    }
+  },
+  "negative": {
+    "白虎": {
+      "description": "白虎主凶，象征冲突与伤害，易引发疾病或意外。",
+      "impact": "带来冲突与健康隐患",
+      "element": "金",
+      "health_aspects": {
+        "day_master_strong": ["慢性疼痛加重"],
+        "day_master_weak": ["肺病风险", "疫苗后遗症疲劳"],
+        "day_master_neutral": ["呼吸不适"]
+      },
+      "element_affinity": ["金", "木"],
+      "flow_year_boost": ["金"],
+      "flow_year_suppress": ["火"],
+      "remedy": ["按摩合谷穴缓解疼痛", "饮山楂茶改善代谢"]
+    }
+  }
+}

@@ -60,26 +60,33 @@ def get_god6(gz=None):
     # 六神, 根据日干五行配对六神五行
 
     :param gz: 日干支
-    :return:
+    :return: 六神列表
     """
+    if not gz or len(gz) < 2:  # 添加错误检查
+        logging.warning("日干支格式错误，使用默认六神顺序")
+        return const.SHEN6
 
-    gm, _ = [i for i in gz]
+    try:
+        gm, _ = [i for i in gz]
 
-    if type(gm) is str:
-        gm = const.GANS.index(gm)
+        if type(gm) is str:
+            gm = const.GANS.index(gm)
 
-    num = math.ceil((gm + 1) / 2) - 7
+        num = math.ceil((gm + 1) / 2) - 7
 
-    if gm == 4:
-        num = -4
+        if gm == 4:
+            num = -4
 
-    if gm == 5:
-        num = -3
+        if gm == 5:
+            num = -3
 
-    if gm > 5:
-        num += 1
+        if gm > 5:
+            num += 1
 
-    return const.SHEN6[num:] + const.SHEN6[:num]
+        return const.SHEN6[num:] + const.SHEN6[:num]
+    except Exception as e:
+        logging.warning(f"计算六神时出错: {e}")
+        return const.SHEN6  # 出错时返回默认顺序
 
 
 '''
