@@ -228,10 +228,22 @@ def main():
             # 使用增强版显示格式
             print("\n" + "="*50)
             
+            # 获取位置信息
+            location_info = None
+            try:
+                location_info = ip_service.get_location_info(args.ip)
+            except Exception as e:
+                location_info = ip_service.default_location
+                
+            location_str = f"{location_info.get('country', '')}"
+            if 'city' in location_info and location_info['city']:
+                location_str += f" {location_info['city']}"
+                
             # 测算日期信息
-            print(f"测算日期：{date_obj.strftime('%Y-%m-%d')}")
+            print(f"\n测算日期：{date_obj.strftime('%Y-%m-%d')}")
             
             # 地理位置信息
+            print(f"位置信息：{location_str}")
             print(f"经度：{longitude:.2f}，纬度：{latitude:.2f}")
             
             # 时间信息
@@ -297,151 +309,15 @@ def main():
             # 构建卦宫和卦名行
             print(f"\n{ben_palace}宫:{ben_gua_name}　　　{bian_palace}宫:{bian_gua_name}")
             
-            # 爻符号定义 - 与 gua_display.py 中的符号完全保持一致
-            from models.liuyao.modules.gua_display import YANG_YAO, YIN_YAO, DONG_YANG, DONG_YIN
+            # 导入排盘相关函数和符号
+            from models.liuyao.modules.gua_display import generate_najia_style_display, generate_full_gua_display, format_for_print
             
-            yang_symbol = YANG_YAO  # 阳爻
-            yin_symbol = YIN_YAO   # 阴爻
-            dong_mark = " ×→"  # 动爻标记
+            # 使用改进后的format_for_print函数生成标准排盘效果
+            print("\n传统排盘格式（标准版）：")
+            traditional_display = format_for_print(result)
+            print(traditional_display)
             
-            # 也可以使用下面的符号，更接近参考样式
-            yang_symbol = "▲▲▲▲▲▲▲▲"
-            yin_symbol = "▲▲▲  ▲▲▲"
-            
-            # 改为参考图中的符号
-            yang_symbol = "━━━━━━━━"
-            yin_symbol = "━━━  ━━━"
-            
-            # 使用完全匹配参考图的符号
-            yang_symbol = "■■■■■■■■"
-            yin_symbol = "■■■  ■■■"
-            
-            # 再尝试不同的符号组合
-            yang_symbol = "━━━━━━━━"
-            yin_symbol = "━━━  ━━━"
-            
-            # 使用更简单的中文符号
-            yang_symbol = "————————"
-            yin_symbol = "———  ———"
-            
-            # 最终采用与参考图完全匹配的符号
-            yang_symbol = "■■■■■■■■"
-            yin_symbol = "■■■  ■■■"
-            
-            # 再次调整使用更通用的符号
-            yang_symbol = "━━━━━━━━"
-            yin_symbol = "━━━  ━━━"
-            
-            # 最终采用与参考图匹配的符号
-            yang_symbol = "━━━━━━━━"
-            yin_symbol = "━━━  ━━━"
-            
-            # 使用ASCII字符更兼容
-            yang_symbol = "\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501"
-            yin_symbol = "\u2501\u2501\u2501  \u2501\u2501\u2501"
-            
-            # 改用中文方块字符
-            yang_symbol = "■■■■■■■■"
-            yin_symbol = "■■■  ■■■"
-            
-            # 采用简化的符号，与参考图更接近
-            yang_symbol = "━━━━━━━━"
-            yin_symbol = "━━━  ━━━"
-            
-            # 使用与参考图完全匹配的符号
-            yang_symbol = "■■■■■■■■"
-            yin_symbol = "■■■  ■■■"
-            
-            # 最终采用参考样式中使用的符号
-            yang_symbol = "━━━━━━━━"
-            yin_symbol = "━━━  ━━━"
-            
-            # 再次尝试方块符号
-            yang_symbol = "■■■■■■■■"
-            yin_symbol = "■■■  ■■■"
-            
-            # 尝试使用不同的组合
-            yang_symbol = "▲▲▲▲▲▲▲▲"
-            yin_symbol = "▲▲▲  ▲▲▲"
-            
-            # 最终使用与参考图完全匹配的符号
-            yang_symbol = "■■■■■■■■"
-            yin_symbol = "■■■  ■■■"
-            
-            # 尝试使用不同的组合
-            yang_symbol = "━━━━━━━━"
-            yin_symbol = "━━━  ━━━"
-            
-            # 最终采用这种最接近参考图的符号
-            yang_symbol = "━━━━━━━━"
-            yin_symbol = "━━━  ━━━"
-            
-            # 也可以用下面的方式
-            yang_symbol = "\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501"
-            yin_symbol = "\u2501\u2501\u2501  \u2501\u2501\u2501"
-            
-            # 再次尝试方块符号
-            yang_symbol = "■■■■■■■■"
-            yin_symbol = "■■■  ■■■"
-            
-            # 最终采用参考图中的符号，但用直观的表示
-            yang_symbol = "━━━━━━━━"
-            yin_symbol = "━━━  ━━━"
-            
-            # 尝试最简单的中文符号
-            yang_symbol = "————————"
-            yin_symbol = "———  ———"
-            
-            # 再次尝试使用不同的符号组合
-            yang_symbol = "□□□□□□□□"
-            yin_symbol = "□□□  □□□"
-            
-            # 最终采用参考图中的符号
-            yang_symbol = "━━━━━━━━"
-            yin_symbol = "━━━  ━━━"
-            
-            # 再次尝试方块符号
-            yang_symbol = "■■■■■■■■"
-            yin_symbol = "■■■  ■■■"
-            
-            # 最终采用参考图更接近的符号
-            yang_symbol = "━━━━━━━━"
-            yin_symbol = "━━━  ━━━"
-            
-            # 注意，具体实现可能需要根据输出终端的支持情况调整符号
-            # 当使用print在终端输出或写入文件时，可能需要使用不同的符号
-            
-            # 采用与样例图一致的符号
-            yang_symbol = "■■■■■■■■"
-            yin_symbol = "■■■  ■■■"
-            
-            # 将对应符号改为与 gua_display.py 中完全一致
-            for i in range(5, -1, -1):
-                yao_num = i + 1
-                ben_yao = result["ben_gua"]["yao"][i]  # 1为阳爻，0为阴爻
-                bian_yao = result["bian_gua"]["yao"][i]
-                
-                # 生成爻的标记（世、应、动）
-                shi_mark = " 世" if yao_num == shi_yao else ""
-                ying_mark = " 应" if yao_num == ying_yao else ""
-                dong_mark = " ×→" if yao_num == dong_yao else ""
-                
-                # 获取六神、六亲、纳甲信息
-                liushen = result["liushen"][i] if i < len(result["liushen"]) else ""
-                liuqin = result["liuqin"][i] if i < len(result["liuqin"]) else ""
-                najia = result["najia"][i] if i < len(result["najia"]) else ""
-                
-                # 组合字符，构建排盘行
-                ben_yao_symbol = YANG_YAO if ben_yao == 1 else YIN_YAO
-                bian_yao_symbol = YANG_YAO if bian_yao == 1 else YIN_YAO
-                
-                # 构建对齐的排盘行
-                line = f"{liushen}\u3000\u3000\u3000\u3000\u3000\u3000{liuqin}{najia} {ben_yao_symbol}{shi_mark}{dong_mark}\u3000\u3000\u3000{liuqin}{najia} {bian_yao_symbol}"
-                print(line)
-            
-            # 使用改进后的najia库排盘格式
-            from models.liuyao.modules.gua_display import generate_najia_style_display, generate_full_gua_display
-            
+            # 使用改进后的排盘格式显示卦象
             print("\n传统排盘格式（改进版）：")
             print(generate_najia_style_display(result))
             

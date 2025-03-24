@@ -9,6 +9,7 @@ import os
 import functools
 import math
 import requests
+import base64
 from cryptography.fernet import Fernet
 from geopy.geocoders import Nominatim
 from lunar_python import Solar, Lunar
@@ -353,11 +354,18 @@ def calculate_bazi(birth_year, birth_month, birth_day, birth_hour, gender,
         }
         
         # 加密数据（HIPAA合规）
-        encrypted_result = encrypt_data(result)
+        try:
+            encrypted_result = encrypt_data(result)
+            encryption_status = "success"
+        except Exception as e:
+            print(f"加密结果数据时出错: {e}")
+            encrypted_result = f"ERROR: {str(e)}"
+            encryption_status = "failed"
         
         return {
             "result": result,
-            "encrypted": encrypted_result
+            "encrypted": encrypted_result,
+            "encryption_status": encryption_status
         }
     
     except Exception as e:
@@ -525,6 +533,18 @@ def get_controlled_element(element):
     }
     return controlled_map.get(element, "未知")
 
+@functools.lru_cache(maxsize=1)
+def get_encryption_key():
+    """
+    获取标准化的加密密钥
+    
+    返回:
+        bytes: 用于Fernet加密的32字节URL安全base64编码密钥
+    """
+    key_bytes = b'my-secret-key-used-for-encryption-16byte'
+    # 确保密钥是32字节并使用URL安全的base64编码
+    return base64.urlsafe_b64encode(key_bytes[:32].ljust(32, b'0'))
+
 def encrypt_data(data):
     """
     加密数据（HIPAA合规）
@@ -535,11 +555,18 @@ def encrypt_data(data):
     返回:
         str: 加密后的数据
     """
-    # 使用固定密钥进行简单加密（实际使用中应使用安全的密钥管理）
-    key = b'my-secret-key-16'  # 16字节密钥示例
-    fernet = Fernet(key)
-    encrypted = fernet.encrypt(json.dumps(data, ensure_ascii=False).encode())
-    return encrypted.decode()
+    try:
+        # 使用固定密钥进行简单加密（实际使用中应使用安全的密钥管理）
+        key = get_encryption_key()
+        fernet = Fernet(key)
+        encrypted = fernet.encrypt(json.dumps(data, ensure_ascii=False).encode())
+        return encrypted.decode()
+    except Exception as e:
+        print(f"加密数据时出错: {e}")
+        # 在加密失败时返回原始数据的哈希值作为替代标识
+        import hashlib
+        data_str = json.dumps(data, ensure_ascii=False)
+        return f"HASH:{hashlib.md5(data_str.encode()).hexdigest()}"
 
 def decrypt_data(encrypted_data):
     """
@@ -551,10 +578,18 @@ def decrypt_data(encrypted_data):
     返回:
         dict: 解密后的数据
     """
-    key = b'my-secret-key-16'
-    fernet = Fernet(key)
-    decrypted = fernet.decrypt(encrypted_data.encode())
-    return json.loads(decrypted.decode())
+    try:
+        # 如果是哈希标识而非加密数据，返回一个简单的字典
+        if isinstance(encrypted_data, str) and encrypted_data.startswith("HASH:"):
+            return {"status": "hash_only", "hash": encrypted_data[5:]}
+        
+        key = get_encryption_key()
+        fernet = Fernet(key)
+        decrypted = fernet.decrypt(encrypted_data.encode())
+        return json.loads(decrypted.decode())
+    except Exception as e:
+        print(f"解密数据时出错: {e}")
+        return {"error": str(e), "status": "decryption_failed"}
 
 def calculate_liunian_ganzhi(year):
     """

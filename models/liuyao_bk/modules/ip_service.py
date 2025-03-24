@@ -63,7 +63,7 @@ class IPService:
             "city": "北京",
             "country": "中国",
             "region": "北京市",
-            "longitude": 116.4,
+            "longitude": 116.4,  # 北京经度
             "latitude": 39.9
         }
     

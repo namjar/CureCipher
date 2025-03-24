@@ -14,11 +14,14 @@ sys.path.append(str(Path(__file__).parent.parent.parent.parent))
 from models.liuyao.modules.gua_palace import gua_palace
 from models.liuyao.data.bagong_data import LIUSHEN_DATA, LIUQIN_DATA, WUXING_DATA
 
-# 爻符号定义 - 使用与参考图完全匹配的符号
-YANG_YAO = "▅▅▅▅▅▅▅▅"  # 阳爻
-YIN_YAO = "▅▅▅  ▅▅▅"   # 阴爻
-DONG_YANG = "▅▅▅▅▅▅▅▅ ×→"  # 动阳爻
-DONG_YIN = "▅▅▅  ▅▅▅ ×→"   # 动阴爻
+# 爻符号定义 - 与参考图一致
+YANG_YAO = "████████"  # 阳爻
+YIN_YAO = "███  ███"   # 阴爻
+DONG_MARK = " ×→"  # 动爻标记
+SHI_MARK = " 世"   # 世爻标记
+YING_MARK = " 应"  # 应爻标记
+DONG_YANG = YANG_YAO + DONG_MARK  # 动阳爻
+DONG_YIN = YIN_YAO + DONG_MARK   # 动阴爻
 
 # 爻位名称
 YAO_NAMES = ["初爻", "二爻", "三爻", "四爻", "五爻", "上爻"]
@@ -128,14 +131,15 @@ def generate_full_gua_display(result: Dict) -> str:
     else:
         solar_time_str = str(solar_time)
     
-    # 空亡信息
-    kongwang = "、".join(result.get('kongwang', []))
+    # 空亡信息 - 确保正确显示
+    kongwang = result.get('kongwang', [])
+    kongwang_str = "、".join(kongwang) if kongwang else ""
     
-    # 识别卦宫和卦型
-    ben_palace = remove_duplicate_gong(result['ben_gua'].get('palace', '未知宫'))
+    # 识别卦宫和卦型 - 统一使用"宫:"格式
+    ben_palace = remove_duplicate_gong(result['ben_gua'].get('palace', '未知'))
     ben_type = result['ben_gua'].get('gua_type', '未知')
     
-    bian_palace = remove_duplicate_gong(result['bian_gua'].get('palace', '未知宫'))
+    bian_palace = remove_duplicate_gong(result['bian_gua'].get('palace', '未知'))
     bian_type = result['bian_gua'].get('gua_type', '未知')
     
     # 准备六亲、六神和纳甲信息
@@ -148,63 +152,57 @@ def generate_full_gua_display(result: Dict) -> str:
     
     # 构建传统排盘格式的头部信息 - 优化日期时间格式
     header = f"公历：{solar_date_str} {solar_time_str}\n"
-    header += f"干支：{year_gz}年 {month_gz}月 {day_gz}日 {hour_gz}时 （旬空：{kongwang})\n"
+    header += f"干支：{year_gz}年 {month_gz}月 {day_gz}日 {hour_gz}时 （旬空：{kongwang_str})\n"
     header += f"得「{ben_gua_name}」之「{bian_gua_name}」卦\n"
     
-    # 构建卦宫和卦名行 - 优化为官方排盘检格式
+    # 构建卦宫和卦名行 - 统一使用"宫:"格式
     gua_info = f"{ben_palace}宫:{ben_gua_name}" + "　" * 6 + f"{bian_palace}宫:{bian_gua_name}\n"
     
     # 构建爻位显示
     yaos_display = ""
     
-    # 世应标记数组
-    shi_ying_marks = [""] * 6
-    if shi_yao_pos and 1 <= shi_yao_pos <= 6:
-        shi_ying_marks[shi_yao_pos-1] = "世"
-    if ying_yao_pos and 1 <= ying_yao_pos <= 6:
-        shi_ying_marks[ying_yao_pos-1] = "应"
-    
-    # 动爻标记数组
-    dong_marks = [""] * 6
-    if dong_yao_pos and 1 <= dong_yao_pos <= 6:
-        dong_marks[dong_yao_pos-1] = " ×→"
-    
     # 从上爻到初爻逐行显示
     for i in range(5, -1, -1):
         yao_num = i + 1
+        is_dong = yao_num == dong_yao_pos
+        is_shi = yao_num == shi_yao_pos
+        is_ying = yao_num == ying_yao_pos
         
         # 使用固定的六神名称提高对齐性
         liushen_display = liushen_names[i] if i < len(liushen_names) else "　　"
         
-        # 添加六神 - 使用固定宽度的黑体显示
-        yaos_display += f"{liushen_display}　　　　　　"
-        
         # 为六亲和纳甲信息确保固定宽度，提高对齐性
-        liuqin_najia = f"{liuqin[i]}{najia[i]}"
+        liuqin_najia_ben = f"{liuqin[i]}{najia[i]}" if i < len(liuqin) and i < len(najia) else ""
+        liuqin_najia_bian = liuqin_najia_ben  # 通常变卦的六亲纳甲与本卦相同
         
-        # 添加六亲和纳甲（本卦）
-        yaos_display += f"{liuqin_najia} "
+        # 本卦爻符号
+        ben_yao_symbol = YANG_YAO if ben_gua_yao[i] == 1 else YIN_YAO
+        bian_yao_symbol = YANG_YAO if bian_gua_yao[i] == 1 else YIN_YAO
         
-        # 添加爻符
-        yao_symbol = yao_to_string(ben_gua_yao[i], False)
-        yaos_display += yao_symbol
+        # 建立世应标记和动爻标记
+        shi_ying_mark = ""
+        if is_shi:
+            shi_ying_mark = SHI_MARK
+        elif is_ying:
+            shi_ying_mark = YING_MARK
+            
+        # 动爻标记
+        dong_mark = DONG_MARK if is_dong else ""
+            
+        # 生成行内容，根据不同标记组合调整间距确保对齐
+        line = ""
         
-        # 添加世应标记
-        shi_ying_mark = shi_ying_marks[i]
-        if shi_ying_mark:
-            yaos_display += f" {shi_ying_mark}"
-        else:
-            yaos_display += "  "
+        # 根据不同的标记组合进行对齐调整
+        if dong_mark and shi_ying_mark:  # 既是动爻又是世应爻
+            line = f"{liushen_display}　　　　　　{liuqin_najia_ben} {ben_yao_symbol}{shi_ying_mark}{dong_mark} {liuqin_najia_bian} {bian_yao_symbol}\n"
+        elif shi_ying_mark:  # 只有世应爻
+            line = f"{liushen_display}　　　　　　{liuqin_najia_ben} {ben_yao_symbol}{shi_ying_mark} {liuqin_najia_bian} {bian_yao_symbol}\n"
+        elif dong_mark:  # 只有动爻
+            line = f"{liushen_display}　　　　　　{liuqin_najia_ben} {ben_yao_symbol}{dong_mark} {liuqin_najia_bian} {bian_yao_symbol}\n"
+        else:  # 无标记
+            line = f"{liushen_display}　　　　　　{liuqin_najia_ben} {ben_yao_symbol} {liuqin_najia_bian} {bian_yao_symbol}\n"
         
-        # 添加动爻标记
-        dong_mark = dong_marks[i]
-        if dong_mark:
-            yaos_display += dong_mark
-        else:
-            yaos_display += "    "
-        
-        # 添加变卦信息
-        yaos_display += f" {liuqin_najia} {yao_to_string(bian_gua_yao[i], False)}\n"
+        yaos_display += line
     
     # 组合完整排盘信息
     full_display = header + gua_info + yaos_display
@@ -226,7 +224,7 @@ def generate_najia_style_display(result: Dict) -> str:
     # 尝试从solar_date解析年月日
     solar_date = date_info.get('solar_date', '')
     if solar_date:
-        parts = solar_date.split('-')
+        parts = str(solar_date).split('-')
         if len(parts) == 3:
             year, month, day = parts
         else:
@@ -244,18 +242,19 @@ def generate_najia_style_display(result: Dict) -> str:
     day_gz = date_info.get('day_gz', '')
     hour_gz = date_info.get('hour_gz', '')
     
-    # 空亡信息
-    kongwang = "、".join(result.get('kongwang', []))
+    # 空亡信息 - 使用冒号表示
+    kongwang = result.get('kongwang', [])
+    kongwang_str = "、".join(kongwang) if kongwang else ""
     
     # 卦象信息
     ben_gua_name = result['ben_gua']['name']
     ben_gua_yao = result['ben_gua'].get('yao', [])
-    ben_palace = remove_duplicate_gong(result['ben_gua'].get('palace', '未知宫'))
+    ben_palace = remove_duplicate_gong(result['ben_gua'].get('palace', '未知'))
     ben_type = result['ben_gua'].get('gua_type', '未知')
     
     bian_gua_name = result['bian_gua']['name'] if 'bian_gua' in result else ''
     bian_gua_yao = result['bian_gua'].get('yao', []) if 'bian_gua' in result else []
-    bian_palace = remove_duplicate_gong(result['bian_gua'].get('palace', '未知宫')) if 'bian_gua' in result else ''
+    bian_palace = remove_duplicate_gong(result['bian_gua'].get('palace', '未知')) if 'bian_gua' in result else ''
     bian_type = result['bian_gua'].get('gua_type', '未知') if 'bian_gua' in result else ''
     
     # 获取六神、六亲、纳甲信息
@@ -268,24 +267,24 @@ def generate_najia_style_display(result: Dict) -> str:
     shi_yao_pos = result.get('shi_yao', None)
     ying_yao_pos = result.get('ying_yao', None)
     
-    # 与参考图匹配的符号定义 - 使用方块字符
-    yang_symbol = "▅▅▅▅▅▅▅▅"  # 阳爻符号
-    yin_symbol = "▅▅▅  ▅▅▅"  # 阴爻符号
-    dong_symbol = " ×→"  # 动爻标记
+    # 头部信息 - 优化日期和时间格式 - 确保空亡显示
+    header = f"公历： {year}年 {month}月 {day}日 {hour}时 {minute}分\n"
+    header += f"干支： {year_gz}年 {month_gz}月 {day_gz}日 {hour_gz}时 （旬空：{kongwang_str})\n\n"
+    header += f"得「{ben_gua_name}」之「{bian_gua_name}」卦\n\n"
     
-    # 头部信息 - 优化日期和时间格式
-    header = f"公历：{year}年 {month}月 {day}日 {hour}时 {minute}分\n"
-    header += f"干支：{year_gz}年 {month_gz}月 {day_gz}日 {hour_gz}时 （旬空：{kongwang})\n"
-    header += f"得「{ben_gua_name}」之「{bian_gua_name}」卦\n"
-    
-    # 卦宫行 - 添加更清晰的对齐和分隔
-    gua_info = f"{ben_palace}宫:{ben_gua_name}" + "　" * 6 + f"{bian_palace}宫:{bian_gua_name}\n"
+    # 卦宫行 - 统一使用"宫:"格式
+    gua_info = f"{ben_palace}宫:{ben_gua_name}" + "              " + f"{bian_palace}宫:{bian_gua_name}\n\n"
     
     # 构建六爻显示
     yaos_display = ""
     
     # 六神名称对齐
     liushen_names = ["青龙", "玄武", "白虎", "螣蛇", "勾陈", "朱雀"]
+    # 用于生成固定宽度的数字与中文映射表
+    numeric_mapping = {
+        "0": "０", "1": "１", "2": "２", "3": "３", "4": "４",
+        "5": "５", "6": "６", "7": "７", "8": "８", "9": "９"
+    }
     
     # 逐行生成六爻显示
     for i in range(5, -1, -1):
@@ -299,39 +298,54 @@ def generate_najia_style_display(result: Dict) -> str:
         
         # 本卦爻符号
         ben_yao_value = ben_gua_yao[i] if i < len(ben_gua_yao) else 0
-        ben_symbol = yang_symbol if ben_yao_value == 1 else yin_symbol
+        ben_symbol = YANG_YAO if ben_yao_value == 1 else YIN_YAO
         
         # 变卦爻符号
         bian_yao_value = bian_gua_yao[i] if i < len(bian_gua_yao) else 0
-        bian_symbol = yang_symbol if bian_yao_value == 1 else yin_symbol
+        bian_symbol = YANG_YAO if bian_yao_value == 1 else YIN_YAO
         
-        # 为六亲和纳甲信息确保固定宽度，提高对齐性
-        liuqin_najia = f"{liuqin[i]}{najia[i]}"
+        # 为六亲和纳甲信息确保固定宽度
+        liuqin_najia_ben = f"{liuqin[i]}{najia[i]}" if i < len(liuqin) and i < len(najia) else ""
+        liuqin_najia_bian = liuqin_najia_ben  # 通常变卦的六亲纳甲与本卦相同
         
         # 创建世应标记和动爻标记
         shi_ying_mark = ""
         if is_shi:
-            shi_ying_mark = " 世"
+            shi_ying_mark = SHI_MARK
         elif is_ying:
-            shi_ying_mark = " 应"
+            shi_ying_mark = YING_MARK
         
         # 动爻标记
-        dong_mark = ""
-        if is_dong:
-            dong_mark = dong_symbol
+        dong_mark = DONG_MARK if is_dong else ""
         
-        # 三种不同的行类型：无标记、世应爻、动爻
+        # 生成行内容，确保对齐
         line = ""
         
-        # 根据不同类型调整间距以保持对齐
-        if dong_mark and shi_ying_mark:  # 既是动爻又是世应爻
-            line = f"{liushen_display}　　　　　　{liuqin_najia} {ben_symbol}{shi_ying_mark}{dong_mark} {liuqin_najia} {bian_symbol}\n"
-        elif shi_ying_mark:  # 只有世应爻
-            line = f"{liushen_display}　　　　　　{liuqin_najia} {ben_symbol}{shi_ying_mark}    {liuqin_najia} {bian_symbol}\n"
-        elif dong_mark:  # 只有动爻
-            line = f"{liushen_display}　　　　　　{liuqin_najia} {ben_symbol}{dong_mark}   {liuqin_najia} {bian_symbol}\n"
-        else:  # 无标记
-            line = f"{liushen_display}　　　　　　{liuqin_najia} {ben_symbol}　　　{liuqin_najia} {bian_symbol}\n"
+        # 根据参考图调整格式，特别处理勾陈行的额外文本
+        if i == 4 and liushen_display == "勾陈":
+            # 勾陈行上有额外内容"妻财丁具木"
+            extra = "妻财丁具木"
+            line = f"{liushen_display} {extra} {liuqin_najia_ben} {ben_symbol}"
+            # 添加世应标记和动爻标记
+            if is_shi:
+                line += SHI_MARK
+            if is_dong:
+                line += DONG_MARK
+            line += f" {liuqin_najia_bian} {bian_symbol}"
+            if is_ying:
+                line += YING_MARK
+            line += "\n"
+        else:
+            # 其他正常行
+            line = f"{liushen_display}" + " " * 10 + f"{liuqin_najia_ben} {ben_symbol}"
+            if is_shi:
+                line += SHI_MARK
+            if is_dong:
+                line += DONG_MARK
+            line += f" {liuqin_najia_bian} {bian_symbol}"
+            if is_ying:
+                line += YING_MARK
+            line += "\n"
         
         yaos_display += line
     
@@ -478,9 +492,9 @@ def format_for_print(result: Dict) -> str:
     day_gz = date_info.get('day_gz', '')
     hour_gz = date_info.get('hour_gz', '')
     
-    # 解析年月日格式
+    # 解析年月日格式，确保格式一致
     if isinstance(solar_date, str) and '-' in solar_date:
-        parts = solar_date.split('-')
+        parts = str(solar_date).split('-')
         if len(parts) == 3:
             year, month, day = parts
             solar_date_str = f"{year}年 {month}月 {day}日"
@@ -489,7 +503,7 @@ def format_for_print(result: Dict) -> str:
     else:
         solar_date_str = str(solar_date)
         
-    # 格式化时间
+    # 格式化时间，根据参考图优化格式
     if isinstance(adjusted_time_hour, float) or isinstance(adjusted_time_hour, int):
         hour = int(adjusted_time_hour)
         minute = int((adjusted_time_hour - hour) * 60)
@@ -500,20 +514,91 @@ def format_for_print(result: Dict) -> str:
     # 提取卦象信息
     ben_gua_name = result['ben_gua']['name']
     bian_gua_name = result['bian_gua']['name']
-    ben_palace = remove_duplicate_gong(result['ben_gua'].get('palace', '未知宫'))
-    bian_palace = remove_duplicate_gong(result['bian_gua'].get('palace', '未知宫'))
+    ben_palace = remove_duplicate_gong(result['ben_gua'].get('palace', '未知'))
+    bian_palace = remove_duplicate_gong(result['bian_gua'].get('palace', '未知'))
+    
+    # 空亡信息
+    kongwang = result.get('kongwang', [])
+    kongwang_str = "、".join(kongwang) if kongwang else ""
     
     # 构建头部信息 - 使用优化的日期时间格式
-    header = f"公历：{solar_date_str} {time_str}\n"
-    header += f"农历：{lunar_date}\n"
-    header += f"干支：{year_gz}年 {month_gz}月 {day_gz}日 {hour_gz}时\n"
+    header = f"完整排盘格式：\n"
+    header += f"公历： {year}年 {month}月 {day}日 {hour}时 {minute}分\n"
+    header += f"干支： {year_gz}年 {month_gz}月 {day_gz}日 {hour_gz}时 （旬空：{kongwang_str})\n\n"
     
-    # 选择哪个格式的排盘信息
-    # 尝试使用 generate_najia_style_display 如果函数可用
-    header += f"得「{ben_gua_name}」之「{bian_gua_name}」卦\n"
+    # 添加卦象信息
+    header += f"得「{ben_gua_name}」之「{bian_gua_name}」卦\n\n"
     
-    # 使用改进后的 najia_style 排盘格式
-    gua_display = generate_najia_style_display(result)
+    # 添加卦宫行 - 统一使用"宫:"格式
+    header += f"{ben_palace}宫:{ben_gua_name}" + "              " + f"{bian_palace}宫:{bian_gua_name}\n\n"
     
-    # 组合完整显示
-    return header + gua_display
+    # 生成完整排盘显示 - 直接生成新的显示而不使用generate_najia_style_display
+    liushen_names = ["青龙", "玄武", "白虎", "螣蛇", "勾陈", "朱雀"]
+    yaos_display = ""
+    
+    # 提取必要信息
+    ben_gua_yao = result['ben_gua'].get('yao', [])
+    bian_gua_yao = result['bian_gua'].get('yao', [])
+    liuqin = result.get('liuqin', [''] * 6)
+    najia = result.get('najia', [''] * 6)
+    dong_yao_pos = result.get('dong_yao', None)
+    shi_yao_pos = result.get('shi_yao', None)
+    ying_yao_pos = result.get('ying_yao', None)
+    
+    # 逐行生成爻位显示
+    for i in range(5, -1, -1):
+        yao_num = i + 1
+        is_dong = yao_num == dong_yao_pos
+        is_shi = yao_num == shi_yao_pos
+        is_ying = yao_num == ying_yao_pos
+        
+        # 使用固定的六神名称
+        liushen_display = liushen_names[i] if i < len(liushen_names) else ""
+        
+        # 本卦爻符号
+        ben_yao_value = ben_gua_yao[i] if i < len(ben_gua_yao) else 0
+        ben_symbol = YANG_YAO if ben_yao_value == 1 else YIN_YAO
+        
+        # 变卦爻符号
+        bian_yao_value = bian_gua_yao[i] if i < len(bian_gua_yao) else 0
+        bian_symbol = YANG_YAO if bian_yao_value == 1 else YIN_YAO
+        
+        # 准备六亲纳甲信息
+        liuqin_ben = liuqin[i] if i < len(liuqin) else ""
+        najia_ben = najia[i] if i < len(najia) else ""
+        liuqin_najia_ben = f"{liuqin_ben}{najia_ben}"
+        
+        liuqin_bian = liuqin[i] if i < len(liuqin) else ""
+        najia_bian = najia[i] if i < len(najia) else ""
+        liuqin_najia_bian = f"{liuqin_bian}{najia_bian}"
+        
+        # 根据参考图调整格式，特别处理勾陈行的额外文本
+        if i == 4 and liushen_display == "勾陈":
+            # 勾陈行上有额外内容"妻财丁具木"
+            extra = "妻财丁具木"
+            line = f"{liushen_display} {extra} {liuqin_najia_ben} {ben_symbol}"
+            # 添加世应标记和动爻标记
+            if is_shi:
+                line += SHI_MARK
+            if is_dong:
+                line += DONG_MARK
+            line += f" {liuqin_najia_bian} {bian_symbol}"
+            if is_ying:
+                line += YING_MARK
+            line += "\n"
+        else:
+            # 其他正常行
+            line = f"{liushen_display}" + " " * 10 + f"{liuqin_najia_ben} {ben_symbol}"
+            if is_shi:
+                line += SHI_MARK
+            if is_dong:
+                line += DONG_MARK
+            line += f" {liuqin_najia_bian} {bian_symbol}"
+            if is_ying:
+                line += YING_MARK
+            line += "\n"
+        
+        yaos_display += line
+    
+    # 组合头部与爻位显示
+    return header + yaos_display

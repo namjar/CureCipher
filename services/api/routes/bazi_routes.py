@@ -128,8 +128,17 @@ async def calc_bazi(request: BaziRequest):
             request.birth_day,
             rounded_hour,
             request.gender,
-            request.city or "Beijing"
+            city=request.city or "Beijing"
         )
+        
+        # 处理返回结果
+        if isinstance(bazi_result, dict):
+            if 'error' in bazi_result:
+                # 如果出错，直接抛出异常
+                raise HTTPException(status_code=500, detail=bazi_result['message'] if 'message' in bazi_result else bazi_result['error'])
+            elif 'result' in bazi_result:
+                # 提取结果数据
+                bazi_result = bazi_result['result']
         
         # 分析五行
         elements_result = analyze_five_elements(bazi_result)
@@ -180,8 +189,17 @@ async def get_bazi_summary(request: BaziRequest):
             request.birth_day,
             rounded_hour,
             request.gender,
-            request.city or "Beijing"
+            city=request.city or "Beijing"
         )
+        
+        # 处理返回结果
+        if isinstance(bazi_result, dict):
+            if 'error' in bazi_result:
+                # 如果出错，直接抛出异常
+                raise HTTPException(status_code=500, detail=bazi_result['message'] if 'message' in bazi_result else bazi_result['error'])
+            elif 'result' in bazi_result:
+                # 提取结果数据
+                bazi_result = bazi_result['result']
         
         # 分析五行
         elements_result = analyze_five_elements(bazi_result)
@@ -247,8 +265,17 @@ async def get_health_advice(
             birth_day,
             rounded_hour,
             gender,
-            city or "Beijing"
+            city=city or "Beijing"
         )
+        
+        # 处理返回结果
+        if isinstance(bazi_result, dict):
+            if 'error' in bazi_result:
+                # 如果出错，直接抛出异常
+                raise HTTPException(status_code=500, detail=bazi_result['message'] if 'message' in bazi_result else bazi_result['error'])
+            elif 'result' in bazi_result:
+                # 提取结果数据
+                bazi_result = bazi_result['result']
         
         # 分析五行
         elements_result = analyze_five_elements(bazi_result)
