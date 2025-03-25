@@ -1,421 +1,230 @@
-"""
-神煞分析模块
-分析八字中的神煞对健康的影响
-"""
-
-import json
-from pathlib import Path
-
-def analyze_shensha(shensha_list, day_master_element, day_master_strength="neutral", flow_year_element=None):
-    """
-    分析神煞及其健康影响
-    
-    参数:
-        shensha_list (list): 神煞名称列表
-        day_master_element (str): 日主五行
-        day_master_strength (str): 日主强度，可选值为 "strong", "weak", "neutral"，默认为 "neutral"
-        flow_year_element (str): 流年五行，用于分析流年对神煞的影响
-    
-    返回:
-        dict: 神煞分析结果和健康建议
-    """
-    # 加载神煞影响数据
-    shensha_data = load_shensha_data()
-    
-    if not shensha_data:
-        return {
-            "error": "无法加载神煞数据",
-            "message": "请检查数据文件是否存在"
-        }
-    
-    # 分析结果
+def analyze_shensha(shensha_list, gua_element, day_master_strength="neutral", flow_year_element="金", mode="liuyao", najia_data=None):
     positive_impacts = []
     negative_impacts = []
     health_advice = []
-    
-    # 将日主五行和流年五行转换为英文
-    day_master_element_en = get_element_english(day_master_element)
-    flow_year_element_en = get_element_english(flow_year_element) if flow_year_element else None
-    
-    # 根据日主强度确定健康影响键
-    day_master_key = f"day_master_{day_master_strength}"
-    
-    # 遍历神煞列表
-    for shensha in shensha_list:
-        # 先查看是否在吉神列表中
-        if shensha in shensha_data.get("positive", {}):
-            info = shensha_data["positive"][shensha]
-            
-            # 获取健康影响，根据日主强度
-            health_impacts = []
-            if "health_aspects" in info:
-                if day_master_key in info["health_aspects"]:
-                    health_impacts = info["health_aspects"][day_master_key]
-                elif "day_master_neutral" in info["health_aspects"]:
-                    health_impacts = info["health_aspects"]["day_master_neutral"]
-            
-            # 评估与日主的相性
-            element_affinity = info.get("element_affinity", [])
-            element_match = day_master_element_en in element_affinity
-            affinity_level = "高" if element_match else "一般"
-            
-            # 分析流年影响
-            flow_year_effect = "中性"
-            if flow_year_element_en:
-                boost_elements = info.get("flow_year_boost", [])
-                suppress_elements = info.get("flow_year_suppress", [])
-                
-                if flow_year_element_en in boost_elements:
-                    flow_year_effect = "增强"
-                elif flow_year_element_en in suppress_elements:
-                    flow_year_effect = "减弱"
-            
-            impact_info = {
-                "name": shensha,
-                "description": info.get("description", ""),
-                "impact": info.get("impact", ""),
-                "health": ", ".join(health_impacts) if health_impacts else "无特定影响",
-                "element": info.get("element", ""),
-                "day_master_affinity": affinity_level,
-                "flow_year_effect": flow_year_effect
-            }
-            
-            positive_impacts.append(impact_info)
-            
-            # 添加健康建议
-            if health_impacts:
-                advice = f"{shensha}({flow_year_effect})有助于{', '.join(health_impacts)}，"
-                if flow_year_effect == "增强":
-                    advice += "流年增强其效果，可以充分发挥其优势。"
-                elif flow_year_effect == "减弱":
-                    advice += "流年减弱其效果，注意保健以维持其优势。"
-                else:
-                    advice += "可以适当发挥其优势。"
-                    
-                health_advice.append(advice)
-        
-        # 再查看是否在凶神列表中
-        elif shensha in shensha_data.get("negative", {}):
-            info = shensha_data["negative"][shensha]
-            
-            # 获取健康影响，根据日主强度
-            health_impacts = []
-            if "health_aspects" in info:
-                if day_master_key in info["health_aspects"]:
-                    health_impacts = info["health_aspects"][day_master_key]
-                elif "day_master_neutral" in info["health_aspects"]:
-                    health_impacts = info["health_aspects"]["day_master_neutral"]
-            
-            # 评估与日主的相性
-            element_affinity = info.get("element_affinity", [])
-            element_match = day_master_element_en in element_affinity
-            affinity_level = "高" if element_match else "一般"
-            
-            # 分析流年影响
-            flow_year_effect = "中性"
-            if flow_year_element_en:
-                boost_elements = info.get("flow_year_boost", [])
-                suppress_elements = info.get("flow_year_suppress", [])
-                
-                if flow_year_element_en in boost_elements:
-                    flow_year_effect = "增强"
-                elif flow_year_element_en in suppress_elements:
-                    flow_year_effect = "减弱"
-            
-            remedy = info.get("remedy", [])
-            
-            impact_info = {
-                "name": shensha,
-                "description": info.get("description", ""),
-                "impact": info.get("impact", ""),
-                "health": ", ".join(health_impacts) if health_impacts else "无特定影响",
-                "element": info.get("element", ""),
-                "day_master_affinity": affinity_level,
-                "flow_year_effect": flow_year_effect,
-                "remedy": remedy
-            }
-            
-            negative_impacts.append(impact_info)
-            
-            # 添加健康建议
-            if health_impacts and remedy:
-                advice = f"{shensha}({flow_year_effect})可能导致{', '.join(health_impacts)}，"
-                if flow_year_effect == "增强":
-                    advice += f"流年增强其影响，建议积极采取以下措施：{', '.join(remedy)}。"
-                elif flow_year_effect == "减弱":
-                    advice += f"流年减弱其影响，可以采取以下措施进一步缓解：{', '.join(remedy)}。"
-                else:
-                    advice += f"建议{', '.join(remedy)}以减轻影响。"
-                    
-                health_advice.append(advice)
-    
-    # 分析总体影响
-    overall_analysis = analyze_overall_impact(positive_impacts, negative_impacts, day_master_element, flow_year_element)
-    
-    return {
-        "positive_impacts": positive_impacts,
-        "negative_impacts": negative_impacts,
-        "health_advice": health_advice,
-        "overall_analysis": overall_analysis
+    god6_impacts = []
+
+    # 五行映射
+    element_map = {"metal": "金", "wood": "木", "water": "水", "fire": "火", "earth": "土"}
+    gua_element_mapped = element_map.get(gua_element.lower(), gua_element)
+    flow_year_element_mapped = element_map.get(flow_year_element.lower(), flow_year_element)
+
+    # 六神影响映射
+    god6_effects = {
+        "青龙": {"effect": "吉，利于行动和决策", "health": "精神焕发"},
+        "朱雀": {"effect": "中性，注意口舌是非", "health": "可能口干舌燥"},
+        "勾陈": {"effect": "中性，宜稳重", "health": "可能消化不佳"},
+        "螣蛇": {"effect": "中性，注意精神压力", "health": "可能焦虑"},
+        "白虎": {"effect": "凶，注意冲突和伤害", "health": "可能外伤"},
+        "玄武": {"effect": "中性，注意隐疾", "health": "可能肾虚"}
     }
 
-def analyze_overall_impact(positive_impacts, negative_impacts, day_master_element, flow_year_element=None):
-    """
-    分析神煞的总体影响
-    
-    参数:
-        positive_impacts (list): 吉神影响列表
-        negative_impacts (list): 凶神影响列表
-        day_master_element (str): 日主五行
-        flow_year_element (str): 流年五行
-    
-    返回:
-        dict: 总体影响分析
-    """
-    positive_count = len(positive_impacts)
-    negative_count = len(negative_impacts)
-    
-    # 统计增强和减弱的神煞数量
+    # 动爻位置与身体部位的映射
+    yao_position_effects = {
+        0: {"position": "初爻", "body_part": "下焦（肾、膀胱、足部）", "health_impact": "可能影响肾功能或下肢"},
+        1: {"position": "二爻", "body_part": "下腹（生殖系统、大肠）", "health_impact": "可能影响生殖或排泄"},
+        2: {"position": "三爻", "body_part": "中焦（脾胃、腰部）", "health_impact": "可能影响消化或腰部"},
+        3: {"position": "四爻", "body_part": "胸部（心肺）", "health_impact": "可能影响心肺功能"},
+        4: {"position": "五爻", "body_part": "上焦（头颈、肩部）", "health_impact": "可能影响头部或肩颈"},
+        5: {"position": "上爻", "body_part": "头部（脑部、面部）", "health_impact": "可能影响头部或精神状态"}
+    }
+
+    # 变卦五行
+    bian_gua_element = gua_element_mapped
+    if najia_data and "bian" in najia_data and najia_data["bian"]["name"]:
+        bian_gua_name = najia_data["bian"]["name"]
+        gua_element_map = {
+            '乾为天': '金', '天风姤': '金', '天山遁': '金', '天地否': '金',
+            '风地观': '金', '山地剥': '金', '火地晋': '金', '火天大有': '金',
+            '坎为水': '水', '水泽节': '水', '水雷屯': '水', '水火既济': '水',
+            '泽火革': '水', '雷火丰': '水', '地火明夷': '水', '地水师': '水',
+            '艮为山': '土', '山火贲': '土', '山天大畜': '土', '山泽损': '土',
+            '火泽睽': '土', '天泽履': '土', '风泽中孚': '土', '风山渐': '土',
+            '震为雷': '木', '雷地豫': '木', '雷水解': '木', '雷风恒': '木',
+            '地风升': '木', '水风井': '木', '泽风大过': '木', '泽雷随': '木',
+            '巽为风': '木', '风天小畜': '木', '风火家人': '木', '风雷益': '木',
+            '天雷无妄': '木', '火雷噬嗑': '木', '山雷颐': '木', '山风蛊': '木',
+            '离为火': '火', '火山旅': '火', '火风鼎': '火', '火水未济': '火',
+            '山水蒙': '火', '风水涣': '火', '天水讼': '火', '天火同人': '火',
+            '坤为地': '土', '地雷复': '土', '地泽临': '土', '地天泰': '土',
+            '雷天大壮': '土', '泽天夬': '土', '水天需': '土', '水地比': '土',
+            '兑为泽': '金', '泽水困': '金', '泽地萃': '金', '泽山咸': '金',
+            '水山蹇': '金', '地山谦': '金', '雷山小过': '金', '雷泽归妹': '金'
+        }
+        bian_gua_element = gua_element_map.get(bian_gua_name, gua_element_mapped)
+
+    # 分析神煞
+    for shensha in shensha_list:
+        shensha_data = None
+        shensha_type = None
+        if shensha in najia_data["shensha_data"]["positive"]:
+            shensha_data = najia_data["shensha_data"]["positive"][shensha]
+            shensha_type = "positive"
+        elif shensha in najia_data["shensha_data"]["negative"]:
+            shensha_data = najia_data["shensha_data"]["negative"][shensha]
+            shensha_type = "negative"
+
+        if not shensha_data:
+            continue
+
+        # 确定健康影响
+        day_master_key = f"day_master_{day_master_strength.lower()}"
+        health_impact = shensha_data["health_aspects"].get(day_master_key, ["无特定影响"])
+
+        # 确定流年影响（考虑五行相生相克）
+        shensha_element = shensha_data["element"]
+        flow_year_effect = "中性"
+        if flow_year_element_mapped in [element_map.get(e, e) for e in shensha_data["flow_year_boost"]]:
+            flow_year_effect = "增强"
+        elif flow_year_element_mapped in [element_map.get(e, e) for e in shensha_data["flow_year_suppress"]]:
+            flow_year_effect = "减弱"
+        else:
+            # 考虑五行相生相克
+            five_elements_interaction = {
+                ("金", "木"): "减弱",  # 木克金
+                ("木", "土"): "减弱",  # 木克土
+                ("土", "水"): "减弱",  # 土克水
+                ("水", "火"): "减弱",  # 水克火
+                ("火", "金"): "减弱",  # 火克金
+                ("木", "金"): "增强",  # 金克木
+                ("土", "木"): "增强",  # 土克木
+                ("水", "土"): "增强",  # 水克土
+                ("火", "水"): "增强",  # 火克水
+                ("金", "火"): "增强",  # 金克火
+                ("金", "水"): "增强",  # 金生水
+                ("水", "木"): "增强",  # 水生木
+                ("木", "火"): "增强",  # 木生火
+                ("火", "土"): "增强",  # 火生土
+                ("土", "金"): "增强",  # 土生金
+            }
+            interaction_key = (shensha_element, flow_year_element_mapped)
+            interaction_key_reverse = (flow_year_element_mapped, shensha_element)
+            if interaction_key in five_elements_interaction:
+                flow_year_effect = five_elements_interaction[interaction_key]
+            elif interaction_key_reverse in five_elements_interaction:
+                flow_year_effect = five_elements_interaction[interaction_key_reverse]
+
+        # 考虑变卦五行的影响
+        if bian_gua_element != gua_element_mapped:
+            five_elements_interaction = {
+                ("金", "木"): "木克金，可能加重呼吸系统问题",
+                ("金", "水"): "水生金，可能缓解呼吸系统问题",
+                ("金", "火"): "火克金，可能加重心肺问题",
+                ("金", "土"): "金生土，可能缓解消化问题",
+                ("木", "金"): "木克金，可能加重呼吸系统问题",
+                ("木", "水"): "水生木，可能缓解肝胆问题",
+                ("木", "火"): "木生火，可能加重心血管问题",
+                ("木", "土"): "木克土，可能加重脾胃问题",
+                ("土", "金"): "土生金，可能缓解呼吸系统问题",
+                ("土", "木"): "木克土，可能加重脾胃问题",
+                ("土", "水"): "土克水，可能加重肾脏问题",
+                ("土", "火"): "火生土，可能缓解心血管问题",
+                ("水", "土"): "土克水，可能加重肾脏问题",
+                ("水", "木"): "水生木，可能缓解肝胆问题",
+                ("水", "火"): "水克火，可能加重心血管问题",
+                ("水", "金"): "金生水，可能缓解肾脏问题",
+                ("火", "土"): "火生土，可能缓解脾胃问题",
+                ("火", "水"): "水克火，可能加重心血管问题",
+                ("火", "金"): "火克金，可能加重呼吸系统问题",
+                ("火", "木"): "木生火，可能加重心血管问题",
+            }
+            interaction_key = (gua_element_mapped, bian_gua_element)
+            interaction_effect = five_elements_interaction.get(interaction_key, "五行影响中性")
+            health_impact.append(interaction_effect)
+
+        # 考虑动爻位置的影响
+        if najia_data and "dong" in najia_data and najia_data["dong"]:
+            for dong_yao in najia_data["dong"]:
+                if dong_yao in yao_position_effects:
+                    health_impact.append(f"{yao_position_effects[dong_yao]['health_impact']}（{yao_position_effects[dong_yao]['body_part']}）")
+
+        # 确定日主亲和性
+        day_master_affinity = "高" if gua_element_mapped in [element_map.get(e, e) for e in shensha_data["element_affinity"]] else "一般"
+
+        # 构建神煞影响
+        impact = {
+            "name": shensha,
+            "description": shensha_data["description"],
+            "impact": shensha_data["impact"],
+            "health": health_impact,
+            "element": shensha_element,
+            "day_master_affinity": day_master_affinity,
+            "flow_year_effect": flow_year_effect,
+            "remedy": shensha_data.get("remedy", [])
+        }
+
+        if shensha_type == "positive":
+            positive_impacts.append(impact)
+        else:
+            negative_impacts.append(impact)
+
+    # 分析健康建议
+    health_advice = []
+    for impact in positive_impacts + negative_impacts:
+        if impact["health"] != ["无特定影响"] and impact["remedy"]:
+            remedies = ", ".join(impact["remedy"]) if impact["remedy"] else "暂无具体建议"
+            health_advice.append(
+                f"{impact['name']}({impact['flow_year_effect']})可能导致{', '.join(impact['health'])}，"
+                f"流年{impact['flow_year_effect']}其影响，建议：{remedies}。"
+            )
+
+    # 分析六神影响
+    if najia_data and "god6" in najia_data:
+        for god in najia_data["god6"]:
+            if god in god6_effects:
+                god6_impacts.append({
+                    "name": god,
+                    "effect": god6_effects[god]["effect"],
+                    "health": god6_effects[god]["health"]
+                })
+
+    # 确定受影响的身体系统
+    body_systems = []
+    element_to_systems = {
+        "金": ["肺", "大肠", "呼吸系统", "皮肤"],
+        "木": ["肝", "胆", "神经系统"],
+        "水": ["肾", "膀胱", "生殖系统"],
+        "火": ["心", "小肠", "循环系统"],
+        "土": ["脾", "胃", "消化系统"]
+    }
+    for impact in negative_impacts:
+        shensha_element_mapped = element_map.get(impact["element"].lower(), impact["element"])
+        if shensha_element_mapped in element_to_systems:
+            body_systems.extend(element_to_systems[shensha_element_mapped])
+    if bian_gua_element in element_to_systems:
+        body_systems.extend(element_to_systems[bian_gua_element])
+    body_systems = list(set(body_systems))  # 去重
+
+    # 计算流年影响
     positive_enhanced = sum(1 for impact in positive_impacts if impact["flow_year_effect"] == "增强")
     positive_weakened = sum(1 for impact in positive_impacts if impact["flow_year_effect"] == "减弱")
     negative_enhanced = sum(1 for impact in negative_impacts if impact["flow_year_effect"] == "增强")
     negative_weakened = sum(1 for impact in negative_impacts if impact["flow_year_effect"] == "减弱")
-    
-    # 计算流年影响
-    flow_year_impact = ""
-    if flow_year_element:
-        if positive_enhanced > positive_weakened and negative_weakened > negative_enhanced:
-            flow_year_impact = "流年有利，增强吉神效果，减弱凶神影响"
-        elif positive_weakened > positive_enhanced and negative_enhanced > negative_weakened:
-            flow_year_impact = "流年不利，减弱吉神效果，增强凶神影响"
-        elif positive_enhanced > positive_weakened and negative_enhanced > negative_weakened:
-            flow_year_impact = "流年作用混合，同时增强吉凶神煞效果"
-        elif positive_weakened > positive_enhanced and negative_weakened > negative_enhanced:
-            flow_year_impact = "流年作用减弱，同时减弱吉凶神煞效果"
-        else:
-            flow_year_impact = "流年影响中性"
-    
-    # 统计与日主相性高的神煞数量
-    positive_high_affinity = sum(1 for impact in positive_impacts if impact["day_master_affinity"] == "高")
-    negative_high_affinity = sum(1 for impact in negative_impacts if impact["day_master_affinity"] == "高")
-    
-    # 计算总体倾向
-    if positive_count > negative_count * 2:
-        tendency = "非常吉利"
-    elif positive_count > negative_count:
-        tendency = "较为吉利"
-    elif positive_count == negative_count:
-        tendency = "吉凶参半"
-    elif negative_count > positive_count * 2:
-        tendency = "非常凶险"
-    else:
-        tendency = "较为凶险"
-    
-    # 计算日主相性
-    if positive_high_affinity > negative_high_affinity:
-        day_master_impact = "吉神相性较强，有助于日主健康"
-    elif positive_high_affinity < negative_high_affinity:
-        day_master_impact = "凶神相性较强，不利于日主健康"
-    else:
-        day_master_impact = "吉凶神相性相当，对日主健康影响中性"
-    
-    # 生成总体健康分析
-    health_analysis = generate_health_analysis(positive_impacts, negative_impacts, day_master_element)
-    
-    return {
-        "positive_count": positive_count,
-        "negative_count": negative_count,
-        "tendency": tendency,
-        "day_master_impact": day_master_impact,
-        "flow_year_impact": flow_year_impact,
+
+    # 整体分析
+    overall_analysis = {
+        "positive_count": len(positive_impacts),
+        "negative_count": len(negative_impacts),
+        "tendency": "非常凶险" if len(negative_impacts) > len(positive_impacts) else "中性",
+        "day_master_impact": "凶神相性较强，不利于日主健康" if len(negative_impacts) > 0 else "中性",
+        "flow_year_impact": "流年增强" if (positive_enhanced + negative_enhanced) > (positive_weakened + negative_weakened) else "流年减弱" if (positive_weakened + negative_weakened) > (positive_enhanced + negative_enhanced) else "流年中性",
         "positive_enhanced": positive_enhanced,
         "positive_weakened": positive_weakened,
         "negative_enhanced": negative_enhanced,
         "negative_weakened": negative_weakened,
-        "health_analysis": health_analysis
+        "health_analysis": {
+            "overall_status": "总体健康状况有待改善" if len(negative_impacts) > 0 else "总体健康状况良好",
+            "focus_advice": "需要特别关注以下健康方面:",
+            "health_strengths": [h for impact in positive_impacts for h in impact["health"] if impact["health"] != ["无特定影响"]],
+            "health_weaknesses": [h for impact in negative_impacts for h in impact["health"] if impact["health"] != ["无特定影响"]],
+            "body_systems_to_focus": body_systems
+        }
     }
 
-def generate_health_analysis(positive_impacts, negative_impacts, day_master_element):
-    """
-    生成总体健康分析
-    
-    参数:
-        positive_impacts (list): 吉神影响列表
-        negative_impacts (list): 凶神影响列表
-        day_master_element (str): 日主五行
-    
-    返回:
-        dict: 健康分析结果
-    """
-    # 收集所有健康方面的影响
-    all_health_aspects = []
-    
-    for impact in positive_impacts:
-        health = impact.get("health", "")
-        if health and health != "无特定影响":
-            aspects = [aspect.strip() for aspect in health.split(",")]
-            all_health_aspects.extend([(aspect, "positive") for aspect in aspects])
-    
-    for impact in negative_impacts:
-        health = impact.get("health", "")
-        if health and health != "无特定影响":
-            aspects = [aspect.strip() for aspect in health.split(",")]
-            all_health_aspects.extend([(aspect, "negative") for aspect in aspects])
-    
-    # 统计各方面的影响
-    aspect_counter = {}
-    for aspect, impact_type in all_health_aspects:
-        if aspect not in aspect_counter:
-            aspect_counter[aspect] = {"positive": 0, "negative": 0}
-        
-        aspect_counter[aspect][impact_type] += 1
-    
-    # 确定需要关注的健康方面
-    health_strengths = []
-    health_weaknesses = []
-    
-    for aspect, counts in aspect_counter.items():
-        if counts["positive"] > counts["negative"]:
-            health_strengths.append(aspect)
-        elif counts["positive"] < counts["negative"]:
-            health_weaknesses.append(aspect)
-    
-    # 根据日主五行确定重点关注的身体系统
-    body_systems = get_body_systems_by_element(day_master_element)
-    
-    # 生成总体健康建议
-    if len(health_strengths) > len(health_weaknesses):
-        overall_status = "总体健康状况良好"
-        focus_advice = "可以重点关注以下方面来进一步提升健康水平:"
-    elif len(health_strengths) < len(health_weaknesses):
-        overall_status = "总体健康状况有待改善"
-        focus_advice = "需要特别关注以下健康方面:"
-    else:
-        overall_status = "总体健康状况平衡"
-        focus_advice = "建议均衡关注各方面健康:"
-    
-    return {
-        "overall_status": overall_status,
-        "focus_advice": focus_advice,
-        "health_strengths": health_strengths,
-        "health_weaknesses": health_weaknesses,
-        "body_systems_to_focus": body_systems
-    }
-
-def load_shensha_data():
-    """
-    加载神煞影响数据
-    
-    返回:
-        dict: 神煞影响数据
-    """
-    try:
-        # 定位到项目根目录的data文件夹
-        base_dir = Path(__file__).parent.parent.parent
-        data_file = base_dir / "data" / "shensha_impacts.json"
-        
-        with open(data_file, 'r', encoding='utf-8') as f:
-            return json.load(f)
-    except Exception as e:
-        print(f"加载神煞数据出错: {e}")
-        return {}
-
-def get_element_english(chinese_element):
-    """
-    将中文五行属性转换为英文
-    
-    参数:
-        chinese_element (str): 中文五行属性
-    
-    返回:
-        str: 英文五行属性 ('wood', 'fire', 'earth', 'metal', 'water')
-    """
-    element_map = {
-        "木": "wood",
-        "火": "fire",
-        "土": "earth",
-        "金": "metal",
-        "水": "water"
-    }
-    
-    return element_map.get(chinese_element, "unknown")
-
-def get_body_systems_by_element(element):
-    """
-    根据五行获取对应的身体系统
-    
-    参数:
-        element (str): 五行属性
-    
-    返回:
-        list: 身体系统列表
-    """
-    body_systems = {
-        "木": ["肝胆系统", "眼睛", "筋络"],
-        "火": ["心脏", "血液循环", "小肠"],
-        "土": ["脾胃", "消化系统", "肌肉"],
-        "金": ["肺", "大肠", "呼吸系统", "皮肤"],
-        "水": ["肾脏", "泌尿系统", "生殖系统", "骨骼"]
-    }
-    
-    return body_systems.get(element, [])
-
-def format_simplified_result(result):
-    """
-    将分析结果格式化为简化版本
-    
-    参数:
-        result (dict): 分析结果
-        
-    返回:
-        dict: 简化版分析结果
-    """
-    positive_impacts = []
-    negative_impacts = []
-    health_advice = []
-    
-    for impact in result.get("positive_impacts", []):
-        positive_impacts.append({
-            "name": impact["name"],
-            "health": impact["health"],
-            "flow_year_effect": impact["flow_year_effect"]
-        })
-    
-    for impact in result.get("negative_impacts", []):
-        negative_impacts.append({
-            "name": impact["name"],
-            "health": impact["health"],
-            "flow_year_effect": impact["flow_year_effect"]
-        })
-    
-    health_advice = result.get("health_advice", [])
-    
     return {
         "positive_impacts": positive_impacts,
         "negative_impacts": negative_impacts,
-        "health_advice": health_advice
+        "health_advice": health_advice,
+        "overall_analysis": overall_analysis,
+        "god6_impacts": god6_impacts
     }
-
-if __name__ == "__main__":
-    # 测试代码
-    test_shensha_list = ["天乙贵人", "白虎"]
-    test_day_master = "木"
-    test_day_master_strength = "strong"  # 日主强度：strong, weak, neutral
-    test_flow_year = "金"  # 2025年乙巳转申年，流年属金
-    
-    # 进行神煞分析
-    result = analyze_shensha(
-        test_shensha_list, 
-        test_day_master, 
-        day_master_strength=test_day_master_strength,
-        flow_year_element=test_flow_year
-    )
-    
-    # 输出简化版结果
-    simplified_result = format_simplified_result(result)
-    print("神煞分析结果 (简化版):")
-    print(json.dumps(simplified_result, ensure_ascii=False, indent=2))
-    
-    # 输出完整结果
-    print("\n神煞分析结果 (完整版):")
-    print(json.dumps(result, ensure_ascii=False, indent=2))
