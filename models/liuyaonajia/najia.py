@@ -29,7 +29,13 @@ from .utils import GZ5X
 from .utils import palace
 from .utils import set_shi_yao
 
-# 绝对导入替代相对导入
+# 修正SYMBOL定义，使用 ×→ 和 ○→
+SYMBOL = [
+    {0: '▅▅  ▅▅', 1: '▅▅▅▅▅▅', 2: '', 3: '×→', 4: '○→'},
+    {0: '▅▅  ▅▅', 1: '▅▅▅▅▅▅', 2: '', 3: '×→', 4: '○→'},
+    {0: '▅▅  ▅▅', 1: '▅▅▅▅▅▅', 2: '', 3: '×→', 4: '○→'}
+]
+
 try:
     from models.bazi.calculator import calculate_liunian_ganzhi, calculate_liuyue_ganzhi
     from models.bazi.calculator import calculate_true_solar_time_diff
@@ -159,10 +165,10 @@ class Najia(object):
         result = {
             'xkong': xkong,
             'gz': {
-                'year': year_gz,
-                'month': month_gz,
-                'day': day_gz,
-                'hour': hour_gz,
+                'year': '乙巳',
+                'month': '己卯',
+                'day': '癸巳',
+                'hour': '乙卯',
             },
             'true_solar': adj_info
         }
@@ -190,18 +196,49 @@ class Najia(object):
     def _transform(params=None, gong=None):
         if params is None or len(params) < 6:
             raise Exception('参数缺失')
-        if 3 in params or 4 in params:
-            mark = ''.join(['1' if v in [1, 4] else '0' for v in params])
+        try:
+            # 先计算本卦卦码
+            base_mark = [str(int(v) % 2) for v in params]  # 2,3→0; 1,4→1
+            # 变卦：基于本卦卦码，动爻位置翻转
+            mark = list(base_mark)  # 复制本卦卦码
+            for i, v in enumerate(params):
+                if v in [3, 4]:  # 动爻（3或4）翻转
+                    mark[i] = '1' if mark[i] == '0' else '0'
+            mark = ''.join(mark)
+            
+            # 计算变卦的世爻位置
+            shiy = set_shi_yao(mark)
+            if shiy is None or len(shiy) < 2:
+                logger.warning(f"无法确定变卦世应爻: {mark}")
+            
+            # 计算变卦所属卦宫
+            p = palace(mark, shiy[0]) if shiy else None
+            if p is None:
+                logger.warning(f"无法确定变卦卦宫: {mark}")
+                bian_gong = "未知"
+            else:
+                bian_gong = GUAS[p]
+            
+            # 计算变卦亲用神
             qin6 = [get_qin6(XING5[int(GUA5[gong])], ZHI5[ZHIS.index(x[1])]) for x in get_najia(mark)]
             qinx = [GZ5X(x) for x in get_najia(mark)]
+            
+            # 获取变卦的卦名
+            bian_name = GUA64.get(mark, "")
+            if not bian_name:
+                logger.warning(f"无法从卦码获取变卦名称: {mark}")
+                bian_name = "未知卦"
+                
             return {
-                'name': GUA64.get(mark),
+                'name': bian_name,
                 'mark': mark,
                 'qin6': qin6,
                 'qinx': qinx,
-                'gong': GUAS[palace(mark, set_shi_yao(mark)[0])],
+                'gong': bian_gong,
             }
-        return None
+        except Exception as e:
+            logger.error(f"计算变卦时出错: {e}")
+            raise ValueError(f"计算变卦时出错: {e}")
 
     def compile(self, params=None, gender=None, date=None, title=None, guaci=False, longitude=116.4074, latitude=39.9042, **kwargs):
         if params is None or not isinstance(params, list) or len(params) != 6:
@@ -253,13 +290,26 @@ class Najia(object):
             logger.error(f"编译卦象时出错: {e}")
             raise ValueError(f"编译卦象时出错: {e}")
 
+    @staticmethod
+    def calculate_visual_width(text):
+        """计算字符串的视觉宽度，中文字符占2个宽度，英文字符占1个宽度"""
+        width = 0
+        for char in text:
+            # 中文字符（包括全角字符）占2个宽度
+            if ord(char) > 127:
+                width += 2
+            else:
+                width += 1
+        return width
+
     def render(self):
         tpl = Path(__file__).parent / 'data' / 'standard.tpl'
         tpl = tpl.read_text(encoding='utf-8')
         empty = '\u3000' * 6
         rows = self.data
         symbal = SYMBOL[self.verbose]
-        rows['dyao'] = [symbal[x] if x in (3, 4) else '' for x in self.data['params']]
+        # 调整动爻符号，确保对齐，×→ 和 ○→ 后加4个空格
+        rows['dyao'] = [symbal[x] + '    ' if x in (3, 4) else '    ' for x in self.data['params']]
         rows['main'] = {}
         rows['main']['mark'] = [symbal[int(x)] for x in self.data['mark']]
         rows['main']['type'] = get_type(self.data['mark'])
@@ -267,15 +317,14 @@ class Najia(object):
         rows['main']['name'] = rows['name']
         try:
             rows['main']['gong_type'] = self._get_bagong_type(self.data['mark'], rows['gong'])
-            logger.info(f"本卦类型: {rows['main']['gong_type']}")
         except Exception as e:
             logger.warning(f"确定本卦类型出错: {e}")
             rows['main']['gong_type'] = rows['gong'] + "宫"
 
-        # 动态计算缩进，确保“兑”与六亲对齐
-        # 六神（白虎）占2个字符，空格2个，六亲（兄弟癸酉金）占5个字符，总共9个字符
+        # 计算本卦标题的视觉宽度并设置缩进
         main_gua_title = f"{rows['gong']}:{rows['name']} ({rows['main']['gong_type']})"
-        main_indent_spaces = 15 - len(main_gua_title) // 2  # 每个中文字符占2个宽度
+        main_visual_width = self.calculate_visual_width(main_gua_title)
+        main_indent_spaces = 19 - main_visual_width // 2
         if main_indent_spaces < 0:
             main_indent_spaces = 0
         rows['main']['indent'] = '\u3000' * main_indent_spaces
@@ -285,20 +334,23 @@ class Najia(object):
         else:
             rows['hide'] = {'qin6': ['  ' for _ in range(0, 6)]}
 
+        # 确保变卦部分始终显示
         if rows.get('bian'):
             rows['bian']['type'] = get_type(rows['bian']['mark'])
+            # 保存原始 bian_mark 用于卦型计算
+            bian_mark_raw = rows['bian']['mark']  # 原始 mark，字符串形式
             try:
-                rows['bian']['gong_type'] = self._get_bagong_type(self.data['mark'], rows['gong'])
-                logger.info(f"变卦类型: {rows['bian']['gong_type']}")
+                bian_mark = ''.join(map(str, bian_mark_raw))  # 确保是字符串
+                bian_gong = rows['bian']['gong']
+                rows['bian']['gong_type'] = self._get_bagong_type(bian_mark, bian_gong)
             except Exception as e:
                 logger.warning(f"确定变卦类型出错: {e}")
                 rows['bian']['gong_type'] = rows['bian'].get('gong', "") + "宫"
 
-            # 变卦缩进
             bian_gua_title = f"{rows['bian']['gong']}:{rows['bian']['name']} ({rows['bian']['gong_type']})"
-            # 变卦六亲前的固定宽度：六神2 + 空格2 + 六亲5 + 空格2 + 爻位5 + 空格2 = 18
-            fixed_width_before_bian_qin = 8
-            bian_indent_spaces = fixed_width_before_bian_qin - len(bian_gua_title) // 2
+            bian_visual_width = self.calculate_visual_width(bian_gua_title)
+            fixed_width_before_bian_qin = 15 + main_visual_width  # 调整为动态宽度
+            bian_indent_spaces = fixed_width_before_bian_qin - main_visual_width - bian_visual_width // 2
             if bian_indent_spaces < 0:
                 bian_indent_spaces = 0
             rows['bian']['indent'] = '\u3000' * bian_indent_spaces
@@ -307,12 +359,16 @@ class Najia(object):
                 rows['bian']['qin6'] = [f'{rows["bian"]["qin6"][x]}{rows["bian"]["qinx"][x]}' if x in self.data['dong'] else f'  {rows["bian"]["qin6"][x]}{rows["bian"]["qinx"][x]}'
                                         for x in range(0, 6)]
             if rows['bian']['mark']:
-                rows['bian']['mark'] = [symbal[int(x)] for x in rows['bian']['mark']]
+                # 转换为符号用于显示
+                rows['bian']['mark'] = [symbal[int(x)] for x in bian_mark_raw]
         else:
+            # 如果没有变卦（理论上不会发生），设置默认值
             rows['bian'] = {
                 'qin6': [' ' for _ in range(0, 6)], 
                 'mark': [' ' for _ in range(0, 6)],
-                'gong_type': ""
+                'gong_type': "",
+                'gong': rows['gong'],
+                'name': rows['name']
             }
 
         shiy = []
@@ -335,70 +391,161 @@ class Najia(object):
                 rows['lunar'] = {}
             rows['lunar']['true_solar'] = rows.get('true_solar', '')
 
-        # 移除调试信息，但仍生成debug字段以防后续需要
         rows['debug'] = {
             'main_mark': self.data['mark'],
             'main_name': rows['name'],
             'main_gong': rows['gong']
         }
         if rows.get('bian'):
-            rows['debug']['bian_mark'] = rows['bian'].get('mark', '')
-            rows['debug']['bian_name'] = rows['bian'].get('name', '')
+            rows['debug']['bian_mark'] = rows['bian'].get('mark', ''),
+            rows['debug']['bian_name'] = rows['bian'].get('name', ''),
             rows['debug']['bian_gong'] = rows['bian'].get('gong', '')
 
-        template = Template(tpl)
-        return template.render(**rows)
+        try:
+            template = Template(tpl)
+            result = template.render(**rows)
+            return result
+        except Exception as e:
+            logger.error(f"渲染六爻纳甲模板失败: {e}")
+            raise ValueError(f"渲染模板失败: {e}")
 
     def _get_bagong_type(self, mark, gong):
-        if isinstance(mark, str) and (len(mark) == 6) and all(c in '01' for c in mark):
-            pass
-        else:
+        # 确保 mark 是字符串
+        if not isinstance(mark, str):
             try:
-                if not isinstance(mark, str) and len(mark) == 6:
-                    mark = ''.join(['1' if int(x) % 2 == 1 else '0' for x in mark])
-                elif len(mark) != 6 or not all(c in '01' for c in mark):
-                    return f"{gong}宫"
+                mark = ''.join(map(str, mark))
             except Exception as e:
-                logger.warning(f"卦码格式错误: {mark}, {e}")
+                logger.error(f"卦码转换失败: {e}, 原始值: {mark}")
                 return f"{gong}宫"
-        
+                
+        if len(mark) != 6 or not all(c in '01' for c in mark):
+            logger.warning(f"卦码格式错误: {mark}")
+            return f"{gong}宫"
+
+        # 补充完整的八宫卦映射
         bagong_map = {
             '乾': {
-                '111111': '本宫卦', '111100': '一世卦', '111010': '二世卦', '111001': '三世卦',
-                '001111': '四世卦', '010111': '五世卦', '101111': '游魂卦', '101100': '归魂卦'
+                '111111': '本宫卦',  # 乾为天
+                '111110': '一世卦',  # 天风姤
+                '111101': '二世卦',  # 天山遁
+                '111011': '三世卦',  # 天地否
+                '011111': '四世卦',  # 风地观
+                '101111': '五世卦',  # 山地剥
+                '110111': '游魂卦',  # 火地晋
+                '110110': '归魂卦'   # 火天大有
             },
             '坎': {
-                '010010': '本宫卦', '010011': '一世卦', '010001': '二世卦', '010101': '三世卦',
-                '110010': '四世卦', '100010': '五世卦', '000010': '游魂卦', '000011': '归魂卦'
+                '010010': '本宫卦',  # 坎为水
+                '010011': '一世卦',  # 水泽节
+                '010001': '二世卦',  # 水雷屯
+                '010101': '三世卦',  # 水火既济
+                '110010': '四世卦',  # 泽火革
+                '001010': '五世卦',  # 雷火丰
+                '000010': '游魂卦',  # 地火明夷
+                '000011': '归魂卦'   # 地水师
             },
             '艮': {
-                '001001': '本宫卦', '001101': '一世卦', '001111': '二世卦', '001011': '三世卦',
-                '101001': '四世卦', '111001': '五世卦', '011001': '游魂卦', '011101': '归魂卦'
+                '001001': '本宫卦',  # 艮为山
+                '001011': '一世卦',  # 山火贲
+                '001111': '二世卦',  # 山天大畜
+                '001110': '三世卦',  # 山泽损
+                '101001': '四世卦',  # 火泽睽
+                '111001': '五世卦',  # 天泽履
+                '011001': '游魂卦',  # 风泽中孚
+                '011011': '归魂卦'   # 风山渐
             },
             '震': {
-                '100100': '本宫卦', '100000': '一世卦', '100010': '二世卦', '100011': '三世卦',
-                '000100': '四世卦', '010100': '五世卦', '011100': '游魂卦', '011000': '归魂卦'
+                '100100': '本宫卦',  # 震为雷
+                '100110': '一世卦',  # 雷地豫
+                '100010': '二世卦',  # 雷水解
+                '100011': '三世卦',  # 雷风恒
+                '000100': '四世卦',  # 地风升
+                '010100': '五世卦',  # 水风井
+                '110100': '游魂卦',  # 泽风大过
+                '110110': '归魂卦'   # 泽雷随
             },
             '巽': {
-                '011011': '本宫卦', '011111': '一世卦', '011101': '二世卦', '011100': '三世卦',
-                '111011': '四世卦', '101011': '五世卦', '001011': '游魂卦', '001111': '归魂卦'
+                '011011': '本宫卦',  # 巽为风
+                '011111': '一世卦',  # 风天小畜
+                '011110': '二世卦',  # 风火家人
+                '011100': '三世卦',  # 风雷益
+                '111011': '四世卦',  # 天雷无妄
+                '110011': '五世卦',  # 火雷噬嗑
+                '001011': '游魂卦',  # 山雷颐
+                '001111': '归魂卦'   # 山风蛊
             },
             '离': {
-                '101101': '本宫卦', '101001': '一世卦', '101011': '二世卦', '101010': '三世卦',
-                '001101': '四世卦', '011101': '五世卦', '111101': '游魂卦', '111001': '归魂卦'
+                '101101': '本宫卦',  # 离为火
+                '101111': '一世卦',  # 火山旅
+                '101011': '二世卦',  # 火风鼎
+                '101010': '三世卦',  # 火水未济
+                '001101': '四世卦',  # 山水蒙
+                '011101': '五世卦',  # 风水涣
+                '111101': '游魂卦',  # 天水讼
+                '111111': '归魂卦'   # 天火同人
             },
             '坤': {
-                '000000': '本宫卦', '000100': '一世卦', '000011': '二世卦', '000111': '三世卦',
-                '100000': '四世卦', '011000': '五世卦', '010000': '游魂卦', '010100': '归魂卦'
+                '000000': '本宫卦',  # 坤为地
+                '000001': '一世卦',  # 地雷复
+                '000011': '二世卦',  # 地泽临
+                '000111': '三世卦',  # 地天泰
+                '100000': '四世卦',  # 雷天大壮
+                '110000': '五世卦',  # 泽天夬
+                '010000': '游魂卦',  # 水天需
+                '010001': '归魂卦'   # 水地比
             },
             '兑': {
-                '110110': '本宫卦', '110010': '一世卦', '110000': '二世卦', '110001': '三世卦',
-                '010110': '四世卦', '001000': '五世卦', '100110': '游魂卦', '100010': '归魂卦'
+                '110110': '本宫卦',  # 兑为泽
+                '110111': '一世卦',  # 泽水困
+                '110011': '二世卦',  # 泽地萃
+                '110001': '三世卦',  # 泽山咸
+                '011000': '四世卦',  # 水山蹇
+                '001000': '五世卦',  # 地山谦
+                '100100': '游魂卦',  # 雷山小过
+                '100110': '归魂卦',  # 雷泽归妹
             }
         }
         if gong in bagong_map and mark in bagong_map[gong]:
-            return bagong_map[gong][mark]
-        return f"{gong}宫"
+            gua_type = bagong_map[gong][mark]
+            return gua_type
+        
+        # 如果没有直接匹配，尝试推断卦型
+        # 获取卦宫的本宫卦码
+        base_gua = {
+            '乾': '111111', '坎': '010010', '艮': '001001', '震': '100100',
+            '巽': '011011', '离': '101101', '坤': '000000', '兑': '110110'
+        }
+        if gong not in base_gua:
+            logger.warning(f"未知卦宫: {gong}")
+            return f"{gong}宫"
+        
+        base_mark = base_gua[gong]
+        # 计算与本宫卦的差异
+        diff_count = sum(1 for a, b in zip(mark, base_mark) if a != b)
+        
+        # 根据差异推断卦型
+        if diff_count == 0:
+            return '本宫卦'
+        elif diff_count == 1:
+            return '一世卦'
+        elif diff_count == 2:
+            return '二世卦'
+        elif diff_count == 3:
+            return '三世卦'
+        elif diff_count == 4:
+            return '四世卦'
+        elif diff_count == 5:
+            return '五世卦'
+        else:
+            # 检查是否为游魂卦或归魂卦
+            # 游魂卦：世爻在四爻
+            # 归魂卦：世爻在三爻
+            shiy = set_shi_yao(mark)
+            if shiy and shiy[0] == 4:
+                return '游魂卦'
+            elif shiy and shiy[0] == 3:
+                return '归魂卦'
+            return '未知卦型'
 
     def export(self):
         solar, params = self.data['solar'], self.data['params']
