@@ -1,24 +1,35 @@
+# models/liuyao/diagnosis.py
 import sys
 from pathlib import Path
 import json
 import datetime
 
 # 清理 sys.modules 以避免重复导入
-module_name = 'models.liuyaonajia.diagnosis'
+module_name = 'models.liuyao.diagnosis'
 if module_name in sys.modules:
     del sys.modules[module_name]
 
 # 动态添加项目根目录到 sys.path
-project_root = str(Path(__file__).resolve().parents[3])  # 指向 CureCipher 根目录
+project_root = str(Path(__file__).resolve().parents[3])
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
 try:
-    from models.liuyaonajia.najia import Najia
-    from models.bazi.shensha import analyze_shensha
+    from models.liuyao.najia import Najia
+    from models.liuyao.shensha import analyze_shensha  # 修改为 liuyao.shensha
 except ImportError as e:
     print(f"ImportError in diagnosis.py: {e}")
     raise
+
+# 动爻位置映射
+YAO_POSITIONS = {
+    0: "初爻",
+    1: "二爻",
+    2: "三爻",
+    3: "四爻",
+    4: "五爻",
+    5: "上爻"
+}
 
 def load_shensha_data():
     base_dir = Path(__file__).parent.parent.parent
@@ -34,7 +45,6 @@ def load_shensha_data():
         raise
 
 def calculate_flow_year_element(year):
-    """根据年份计算流年五行（基于天干）"""
     gan_elements = {
         "甲": "木", "乙": "木",
         "丙": "火", "丁": "火",
@@ -56,10 +66,10 @@ def diagnose_health(params, date, gender=None, day_master_strength="neutral", fl
         raise
 
     gua_data = najia.data
-    gua_name = gua_data['name']  # 本卦名称
+    gua_name = gua_data['name']
     day_gz = gua_data['lunar']['gz']['day']
     dong = gua_data['dong']
-    bian_gua_name = gua_data['bian']['name'] if gua_data['bian']['name'] else gua_name  # 变卦名称
+    bian_gua_name = gua_data['bian']['name'] if gua_data['bian']['name'] else gua_name
 
     gua_element_map = {
         '乾为天': '金', '天风姤': '金', '天山遁': '金', '天地否': '金',
@@ -79,8 +89,8 @@ def diagnose_health(params, date, gender=None, day_master_strength="neutral", fl
         '兑为泽': '金', '泽水困': '金', '泽地萃': '金', '泽山咸': '金',
         '水山蹇': '金', '地山谦': '金', '雷山小过': '金', '雷泽归妹': '金'
     }
-    gua_element = gua_element_map.get(gua_name, '未知')  # 本卦五行
-    bian_gua_element = gua_element_map.get(bian_gua_name, gua_element)  # 变卦五行
+    gua_element = gua_element_map.get(gua_name, '未知')
+    bian_gua_element = gua_element_map.get(bian_gua_name, gua_element)
 
     try:
         shensha_data = load_shensha_data()
@@ -96,12 +106,11 @@ def diagnose_health(params, date, gender=None, day_master_strength="neutral", fl
         "灾煞", "吊客", "大耗", "丧门"
     ]
 
-    # 五行映射
     element_map = {'金': 'metal', '木': 'wood', '水': 'water', '火': 'fire', '土': 'earth'}
     gua_element_mapped = element_map.get(gua_element, gua_element.lower())
     bian_gua_element_mapped = element_map.get(bian_gua_element, bian_gua_element.lower())
 
-    # 筛选与本卦五行匹配的神煞
+    # 筛选神煞
     shensha_list = [
         s for s in shensha_data["positive"]
         if s in liuyao_shensha and gua_element_mapped in shensha_data["positive"][s]["element_affinity"]
@@ -111,16 +120,13 @@ def diagnose_health(params, date, gender=None, day_master_strength="neutral", fl
     ]
     print(f"加载的神煞: {shensha_list}")
 
-    # 准备 najia_data，包含 shensha_data
     gua_data["shensha_data"] = shensha_data
 
-    # 动态计算流年五行
     if flow_year_element is None:
         year = date.year
         flow_year_element = calculate_flow_year_element(year)
         print(f"动态计算流年五行: {year}年 -> {flow_year_element}")
 
-    # 调用 shensha.py 进行健康分析
     try:
         shensha_result = analyze_shensha(
             shensha_list,
@@ -145,34 +151,79 @@ def diagnose_health(params, date, gender=None, day_master_strength="neutral", fl
             health_impacts.extend(impact["health"])
         if impact["remedy"]:
             remedies.extend(impact["remedy"])
+    
+    if "dong_yao_health" in shensha_result:
+        health_impacts.extend(shensha_result["dong_yao_health"])
+    if "dong_yao_remedies" in shensha_result:
+        remedies.extend(shensha_result["dong_yao_remedies"])
 
-    return {
+    dong_yao_display = "无动爻"
+    if gua_data['dong']:
+        dong_idx = gua_data['dong'][0]
+        dong_yao_display = YAO_POSITIONS[dong_idx]
+
+    # 六爻分析结果（订阅模块）
+    liuyao_result = {
+        "subscription_required": True,  # 标记为订阅模块
         "gua_name": gua_name,
         "gua_element": gua_element,
         "bian_gua_name": bian_gua_name,
         "bian_gua_element": bian_gua_element,
-        "health_impacts": list(set(health_impacts)),  # 去重
-        "remedies": list(set(remedies)),  # 去重
+        "health_impacts": list(set(health_impacts)),
+        "remedies": list(set(remedies)),
         "shensha": shensha_list,
         "god6_impacts": shensha_result["god6_impacts"],
-        "render": najia.render(),
+        "render": najia.render().replace(f"动爻: 第{dong_idx + 1}爻", f"动爻: {dong_yao_display}"),
         "shensha_analysis": shensha_result
     }
 
+    # 八字分析（通用模块）
+    bazi_result = None
+    if gender and date:
+        try:
+            from models.bazi.calculator import calculate_bazi
+            bazi_result = calculate_bazi(
+                birth_year=date.year,
+                birth_month=date.month,
+                birth_day=date.day,
+                birth_hour=date.hour,
+                gender=gender,
+                longitude=longitude,
+                latitude=latitude
+            )
+        except ImportError:
+            print("八字模块未启用，请确保 models.bazi.calculator 可用")
+
+    return {
+        "liuyao_result": liuyao_result,  # 六爻结果（订阅模块）
+        "bazi_result": bazi_result      # 八字结果（通用模块）
+    }
+
 if __name__ == "__main__":
-    # 测试与用户一致的参数
-    params = [4, 1, 1, 1, 1, 1]  # 泽天夬变乾为天
+    params = [4, 1, 1, 1, 1, 1]
     date = "2025-03-24 22:00"
     date_obj = datetime.datetime.strptime(date, '%Y-%m-%d %H:%M')
-    result = diagnose_health(params=params, date=date_obj, day_master_strength="neutral")
-    print(result['render'])
+    result = diagnose_health(params=params, date=date_obj, day_master_strength="neutral", gender="male")
+    
+    # 输出六爻分析（订阅模块）
+    print("\n=== 六爻分析（订阅模块） ===")
+    if result['liuyao_result']['subscription_required']:
+        print("注意：此模块需要订阅才能查看完整分析结果")
+    print(result['liuyao_result']['render'])
     print("\n健康分析：")
-    print(f"本卦名：{result['gua_name']}")
-    print(f"本卦五行：{result['gua_element']}")
-    print(f"变卦名：{result['bian_gua_name']}")
-    print(f"变卦五行：{result['bian_gua_element']}")
-    print(f"健康影响：{result['health_impacts']}")
-    print(f"调理建议：{result['remedies']}")
-    print(f"六神影响：{result['god6_impacts']}")
+    print(f"本卦名：{result['liuyao_result']['gua_name']}")
+    print(f"本卦五行：{result['liuyao_result']['gua_element']}")
+    print(f"变卦名：{result['liuyao_result']['bian_gua_name']}")
+    print(f"变卦五行：{result['liuyao_result']['bian_gua_element']}")
+    print(f"健康影响：{result['liuyao_result']['health_impacts']}")
+    print(f"调理建议：{result['liuyao_result']['remedies']}")
+    print(f"六神影响：{result['liuyao_result']['god6_impacts']}")
     print("\n神煞分析结果 (完整版):")
-    print(json.dumps(result['shensha_analysis'], ensure_ascii=False, indent=2))
+    print(json.dumps(result['liuyao_result']['shensha_analysis'], ensure_ascii=False, indent=2))
+
+    # 输出八字分析（通用模块）
+    if result['bazi_result']:
+        print("\n=== 八字分析（通用模块） ===")
+        print("八字排盘：", result['bazi_result']['result']['bazi']['formatted'])
+        print("五行分布：", result['bazi_result']['result']['elements']['percentages'])
+        print("喜用神：", result['bazi_result']['result']['yong_shen']['element'])
